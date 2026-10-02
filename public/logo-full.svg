@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 60" fill="none">
+  <defs>
+    <linearGradient id="gold-text" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DAA645"/>
+      <stop offset="100%" stop-color="#C89B3C"/>
+    </linearGradient>
+  </defs>
+  <!-- ORIGINS text -->
+  <text x="0" y="28" font-family="'Outfit', sans-serif" font-weight="700" font-size="26" fill="#0B2D5B" letter-spacing="3">ORIGINS</text>
+  <!-- ATLAS text -->
+  <text x="155" y="28" font-family="'Outfit', sans-serif" font-weight="800" font-size="26" fill="url(#gold-text)" letter-spacing="3">ATLAS</text>
+  <!-- Tagline -->
+  <text x="0" y="50" font-family="'Inter', sans-serif" font-weight="500" font-size="9" fill="#64748b" letter-spacing="4">COMMUNITIES</text>
+  <rect x="100" y="43" width="5" height="5" rx="1" fill="#DAA645"/>
+  <text x="112" y="50" font-family="'Inter', sans-serif" font-weight="500" font-size="9" fill="#64748b" letter-spacing="4">HOMES</text>
+  <rect x="172" y="43" width="5" height="5" rx="1" fill="#DAA645"/>
+  <text x="184" y="50" font-family="'Inter', sans-serif" font-weight="500" font-size="9" fill="#64748b" letter-spacing="4">PROPERTY INTELLIGENCE</text>
+</svg>

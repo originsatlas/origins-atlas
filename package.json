@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "deploy": "vercel --prod",
     "lint": "eslint"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vercel": "^60.1.3"
   }
 }

@@ -1,16 +1,44 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
+import './globals.css';
+import NavigationProgressBar from '@/components/NavigationProgressBar';
 
 export const metadata: Metadata = {
-  title: "Origins Atlas — Community-First Real Estate",
+  title: 'Origins Atlas — Communities • Homes • Property Intelligence',
   description:
-    "Origins Atlas is a community-first real estate platform. One house, one record — see every listing, agent, and price in one place.",
-  keywords: ["real estate", "Thailand", "property", "Bangkok", "Bangna", "Nirvana Absolute"],
-  openGraph: {
-    title: "Origins Atlas",
-    description: "Community-first real estate platform. One house, one record.",
-    type: "website",
+    'Origins Atlas is a community-first real estate intelligence platform starting in Thailand. One physical house, one canonical record — connecting every broker listing, asking price, and price history in one place.',
+  keywords: [
+    'Origins Atlas',
+    'Thailand Real Estate',
+    'Nirvana Absolute Bangna',
+    'Bangkok Property Intelligence',
+    'Canonical Property Records',
+    'Bangna Luxury Homes',
+  ],
+  icons: {
+    icon: '/brand/app-icon-dark.png',
+    shortcut: '/brand/app-icon-dark.png',
+    apple: '/brand/app-icon-dark.png',
   },
+  openGraph: {
+    title: 'Origins Atlas — Communities • Homes • Property Intelligence',
+    description: 'One physical house, one canonical record. Every listing, agent, and historical price in one place.',
+    type: 'website',
+    images: [
+      {
+        url: '/brand/logo-luxury-dark.png',
+        width: 1200,
+        height: 630,
+        alt: 'Origins Atlas',
+      },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -20,7 +48,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link rel="icon" href="/brand/app-icon-dark.png" type="image/png" />
+      </head>
+      <body>
+        <Suspense fallback={null}>
+          <NavigationProgressBar />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }
