@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Origins Atlas — Luxury Real Estate Intelligence Platform
 
-## Getting Started
+Origins Atlas is the authoritative single source of truth for master-planned communities and luxury residential developments in Southeast Asia, beginning with Bangkok, Thailand.
 
-First, run the development server:
+---
 
+## Technical Documentation & Architecture Review
+
+- **[Technical Architecture & Database Specification](./TECHNICAL_ARCHITECTURE.md)**: Full architecture review guide, ERD diagram, canonical property deduplication model, security architecture, and testing instructions.
+- **[Database Migrations](./supabase/migrations/README.md)**: Sequential version-controlled migrations for Supabase/PostgreSQL.
+- **[Schema Export](./supabase/schema.sql)**: Complete PostgreSQL DDL export.
+- **[Seed Dataset](./supabase/seed.sql)**: Realistic Thai real estate prototype seed data.
+
+---
+
+## Core Entities & Relational Model
+
+Origins Atlas introduces the **"One Physical House, Many Broker Listings"** architecture:
+- **`communities`**: Master residential developments (e.g., *Nirvana Absolute Bangna*).
+- **`houses`**: Canonical physical units with permanent specifications, floor plans, and coordinates.
+- **`agents`**: Directory of brokers and agencies (e.g., *108Siam*, *PropertyScout*, *Connex Property*, *Agentplus*).
+- **`source_listings`**: Broker listings across portals pointing to canonical physical houses.
+- **`price_history`**: Immutable time-series audit trail of asking price fluctuations.
+- **`verifications`**: Cadastral, title deed, and site inspection records.
+- **`duplicate_reviews`**: Algorithmic queue for resolving cross-broker duplicate listings.
+
+---
+
+## Getting Started Locally
+
+### 1. Prerequisites
+- Node.js 18+ (Node 20+ recommended)
+- A Supabase PostgreSQL database
+
+### 2. Environment Variables
+Copy `.env.local.example` to `.env.local`:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
+```
+Fill in your Supabase project credentials and admin authentication keys:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+
+ADMIN_EMAIL=admin@originsatlas.com
+ADMIN_PASSWORD=<your-admin-password>
+ADMIN_SESSION_SECRET=<32-char-random-secret>
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Database Setup
+Apply migrations using either:
+```bash
+supabase db push
+# or run supabase/schema.sql and supabase/seed.sql in the Supabase SQL Editor
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) for the public portal, or [http://localhost:3000/admin](http://localhost:3000/admin) for the admin portal.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Admin Portal & Test Access
 
-To learn more about Next.js, take a look at the following resources:
+The administrative CMS (`/admin`) is guarded by an Edge Proxy middleware using stateless Web Crypto HMAC-SHA256 session tokens.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Login URL:** `/admin/login`
+- **Default Prototype Admin Email:** `admin@originsatlas.com`
+- **Default Prototype Admin Password:** `OriginsAtlas2026!`
