@@ -1,7 +1,7 @@
 # Origins Atlas — Technical Architecture & Database Specification
-**Document Version:** 1.0.0  
+**Document Version:** 1.1.0 (Stage 1 Technical Foundation & Security Hardening)  
 **Target Audience:** Independent Technical Architecture Reviewers & Engineering Stakeholders  
-**Scope:** Current Staging Prototype (Milestones 1 & 2)
+**Scope:** Stage 1 Security & Data-Protection Hardening
 
 ---
 
@@ -250,7 +250,9 @@ Admins can review candidate pairs side-by-side in `/admin/duplicates` and mark t
 - **Framework:** Next.js 16.3.6 (Turbopack, TypeScript, React 19).
 - **Styling Architecture:** Custom luxury design system (`globals.css`) with obsidian/gold themes, glassmorphism, responsive navigation, and mobile drawer views.
 - **Database:** Supabase PostgreSQL 15+.
-- **Authentication:** Stateless, high-performance HMAC-SHA256 session token system built on the native Web Crypto API (`src/lib/auth.ts`), validated at the edge by Next.js Proxy Middleware (`src/proxy.ts`).
+- **Authentication & Security:** Hardened HMAC-SHA256 session token system built on Web Crypto API (`src/lib/auth.ts`). Fallback credentials and secrets have been removed; strictly requires environment configuration (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`). Validated at the edge via middleware.
+- **Database Access Control:** Public `anon` role is strictly read-only (`SELECT` only on non-archived rows). All mutations are executed via authenticated server API routes (`/api/admin/*`) utilizing the Supabase service role key and session validation.
+- **Data Integrity & Auditability:** Triggers guarantee append-only price history, automated change logging, and comprehensive audit tracking via `audit_logs`. Soft delete preserves historical integrity across all entities.
 
 ---
 
@@ -258,52 +260,56 @@ Admins can review candidate pairs side-by-side in `/admin/duplicates` and mark t
 
 The reviewer has read-only architectural review scope and does **not** need Supabase master database credentials. The staging environment provides a fully interactive administrator interface to inspect, add, and edit records.
 
-### 6.1. Staging Admin Credentials
+### 6.1. Staging Admin Configuration
 
-| Parameter | Value |
-|---|---|
-| **Admin Login URL** | `https://[your-staging-url]/admin/login` (or `http://localhost:3000/admin/login`) |
-| **Email** | `admin@originsatlas.com` |
-| **Password** | `OriginsAtlas2026!` |
-| **Session Lifetime** | 7 Days (Stateless `origins_admin_session` HttpOnly cookie) |
+Admin credentials are now securely managed via environment variables (no default credentials exist in source code):
 
-*A one-click "Fill Demo Credentials" button is also provided directly on the login screen for convenience.*
+| Parameter | Configuration Key | Notes |
+|---|---|---|
+| **Admin Login URL** | `https://[your-staging-url]/admin/login` (or `http://localhost:3000/admin/login`) | Protected route |
+| **Email** | `ADMIN_EMAIL` | Set in deployment environment (.env) |
+| **Password** | `ADMIN_PASSWORD` | Set in deployment environment (.env) |
+| **Signing Secret** | `ADMIN_SESSION_SECRET` | 32+ character high-entropy key |
+| **Session Lifetime** | 7 Days (Stateless `origins_admin_session` HttpOnly cookie) | Secure, SameSite=Lax |
 
 ### 6.2. Recommended Workflows for Reviewer Verification
 
 1. **Dashboard Overview (`/admin`):**
    - Review top-level statistics (Total Communities, Canonical Houses, Active Source Listings, Verified Agents, Pending Duplicates).
+   - Inspect dual-currency asking prices (THB primary, USD secondary).
    - Inspect quick-access cards and system status indicators.
 
 2. **Communities Workflow (`/admin/communities`):**
    - View existing community (*Nirvana Absolute Bangna*).
-   - Test the **"Add Community"** modal (`/admin/communities/new`) to observe validation, auto-slug generation, and array handling for amenities.
-   - Inspect edit form (`/admin/communities/[id]/edit`).
+   - Test the **"Add Community"** modal (`/admin/communities/new`) to observe validation, standardized province dropdowns, auto-slug generation, and array handling for amenities.
+   - Inspect edit and archive operations (`ArchiveButton`).
 
 3. **Canonical Houses Workflow (`/admin/houses`):**
    - Inspect the 6 canonical house units. Note the status flags (`active`, `pending_review`).
    - Test filtering by Community and Status.
-   - Test the **"Add House"** workflow (`/admin/houses/new`) to see how physical properties are created with specifications, coordinates, and photo galleries.
+   - Test the **"Add House"** workflow (`/admin/houses/new`) to see standardized property types, specifications, coordinates, and photo galleries.
 
 4. **Agents & Brokers Directory (`/admin/agents`):**
    - Review registered agency entities (`108Siam`, `PropertyScout`, `Connex Property`, `Agentplus`).
-   - Test adding a new broker source.
+   - Test adding a new broker source and verifying soft-delete archive support.
 
-5. **Source Listings & Cross-Broker Mappings (`/admin/listings`):**
+5. **Source Listings & Price History (`/admin/listings`):**
    - Inspect how external listings map between specific `houses` and `agents`.
-   - Observe the multi-currency storage (`asking_price_usd` and `asking_price_thb`).
+   - Observe THB as primary pricing with real-time automated USD derivation.
+   - Test modifying a listing's price: an append-only historical record is automatically generated in `price_history` by the PostgreSQL trigger.
 
 6. **Duplicate Resolution Queue (`/admin/duplicates`):**
-   - Review the candidate duplicate pair flagged between Unit `88/12` and Unit `88/35`.
-   - Inspect match score (0.78) and matching heuristic tags (`same_community`, `matching_price_point`, `identical_bedroom_count`).
+   - Review candidate duplicate pairs flagged between units.
+   - Inspect match score and matching heuristic tags (`same_community`, `matching_price_point`, `identical_bedroom_count`).
 
 ---
 
 ## 7. Migration Files & Schema Export Reference
 
-All database definition assets are organized within the project repository:
+All database definition assets are organized sequentially within the project repository:
 - **Sequential Migrations Directory:** [`supabase/migrations/`](./supabase/migrations/)
   - `20260926000001_initial_schema.sql` (Full relational DDL)
-  - `20261002000001_seed_prototype_data.sql` (Realistic Thai property seed data)
+  - `20261002000001_seed_prototype_data.sql` (Protected seed data with production guard)
+  - `20261109000001_security_and_foundation.sql` (Stage 1 Security & Foundation migration: anon lockdown, soft delete, audit logging, price triggers, standard constraints)
 - **Standalone Schema DDL Export:** [`supabase/schema.sql`](./supabase/schema.sql)
-- **Standalone Seed Data Export:** [`supabase/seed.sql`](./supabase/seed.sql)
+- **Standalone Seed Data Export:** [`supabase/seed.sql`](./supabase/seed.sql) (includes production environment guard)

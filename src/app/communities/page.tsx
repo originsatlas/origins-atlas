@@ -15,6 +15,7 @@ export default async function CommunitiesPage() {
   const { data: communities } = await supabase
     .from('communities')
     .select('*')
+    .eq('is_archived', false)
     .order('name');
 
   return (

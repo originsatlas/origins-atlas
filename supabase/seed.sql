@@ -1,24 +1,27 @@
 -- ============================================================================
--- Origins Atlas — Database Reset & Realistic Seed Data
+-- Origins Atlas — Prototype Development & Staging Seed Data
 -- ============================================================================
--- This script:
--- 1. Grants all table & schema permissions to anon and authenticated roles
--- 2. Cleanly deletes / truncates any existing data across all tables
--- 3. Generates REAL runtime UUIDs using Postgres gen_random_uuid()
--- 4. Inserts production-grade, realistic Thai real estate data
+-- SAFETY GUARD:
+-- This script is strictly for development and staging environments.
+-- It MUST NEVER be executed against production environments.
 -- ============================================================================
 
--- Step 1: Ensure public access privileges are active for Supabase client
+DO $$
+BEGIN
+  IF current_setting('app.environment', true) = 'production' THEN
+    RAISE EXCEPTION 'CRITICAL SAFETY BLOCK: Seed/reset script cannot be executed on a production database.';
+  END IF;
+END $$;
+
+-- Enforce strict role permissions: read-only for anon, full management for service/authenticated
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
+REVOKE INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public FROM anon;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated, service_role;
 
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
-
--- Step 2: Cleanly delete all existing records (cascading)
+-- Development reset: Cleanly truncate existing records for fresh staging seeding
 TRUNCATE TABLE duplicate_reviews, verifications, price_history, source_listings, houses, agents, communities CASCADE;
 
 -- Step 3: Insert realistic data with dynamic, database-generated UUIDs

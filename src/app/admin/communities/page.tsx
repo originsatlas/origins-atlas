@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import ArchiveButton from '@/components/admin/ArchiveButton';
 
 export const metadata = { title: 'Manage Communities — Origins Atlas Admin' };
 
@@ -42,11 +43,9 @@ export default async function AdminCommunitiesPage() {
                 <td>{c.total_units || '—'}</td>
                 <td style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>{c.slug}</td>
                 <td>
-                  <div className="data-table-actions">
+                  <div className="data-table-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Link href={`/admin/communities/${c.id}/edit`} className="btn btn-sm btn-secondary">Edit</Link>
-                    {/* Link to community commented out for now:
-                    <Link href={`/communities/${c.slug}`} className="btn btn-sm btn-secondary">View</Link>
-                    */}
+                    <ArchiveButton endpoint="communities" id={c.id} name={c.name} isArchived={c.is_archived} />
                   </div>
                 </td>
               </tr>

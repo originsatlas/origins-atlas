@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { formatUSD, formatPricePerSqm } from '@/lib/utils';
+import { formatUSD, formatTHB, formatPricePerSqm } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -33,6 +33,7 @@ export default async function CommunityPage({ params }: PageProps) {
     .from('communities')
     .select('*')
     .eq('slug', slug)
+    .eq('is_archived', false)
     .single();
 
   if (!community) {
@@ -59,6 +60,7 @@ export default async function CommunityPage({ params }: PageProps) {
       *,
       source_listings (
         id,
+        asking_price_thb,
         asking_price_usd,
         price_per_sqm_usd,
         is_active,
@@ -74,6 +76,7 @@ export default async function CommunityPage({ params }: PageProps) {
       )
     `)
     .eq('community_id', community.id)
+    .eq('is_archived', false)
     .in('status', ['active', 'pending_review'])
     .order('created_at', { ascending: false });
 
@@ -146,8 +149,10 @@ export default async function CommunityPage({ params }: PageProps) {
                 {houses.map((house) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const listings = (house.source_listings || []) as any[];
-                  const prices = listings.map((l: { asking_price_usd: number }) => l.asking_price_usd).filter(Boolean);
-                  const lowestPrice = prices.length > 0 ? Math.min(...prices) : null;
+                  const pricesThb = listings.map((l: { asking_price_thb: number }) => l.asking_price_thb).filter(Boolean);
+                  const pricesUsd = listings.map((l: { asking_price_usd: number }) => l.asking_price_usd).filter(Boolean);
+                  const lowestPriceThb = pricesThb.length > 0 ? Math.min(...pricesThb) : (pricesUsd.length > 0 ? Math.round(Math.min(...pricesUsd) / 0.0271) : null);
+                  const lowestPriceUsd = pricesUsd.length > 0 ? Math.min(...pricesUsd) : (lowestPriceThb ? Math.round(lowestPriceThb * 0.0271) : null);
                   const pricePerSqm = listings[0]?.price_per_sqm_usd;
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const latestVerification = (house.verifications as any[])?.[0];
@@ -198,12 +203,17 @@ export default async function CommunityPage({ params }: PageProps) {
                             {house.status === 'pending_review' && <span className="badge badge-pending">Review</span>}
                           </div>
 
-                          {/* Price overlay */}
-                          {lowestPrice && (
+                          {/* Price overlay (THB Primary, USD Secondary) */}
+                          {lowestPriceThb && (
                             <div className="property-card-price">
                               <div className="property-card-price-value">
-                                {formatUSD(lowestPrice)}
+                                {formatTHB(lowestPriceThb)}
                               </div>
+                              {lowestPriceUsd && (
+                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', fontWeight: 500, marginTop: '1px' }}>
+                                  ({formatUSD(lowestPriceUsd)})
+                                </div>
+                              )}
                               {pricePerSqm && (
                                 <div className="property-card-price-sqm">
                                   {formatPricePerSqm(pricePerSqm)}

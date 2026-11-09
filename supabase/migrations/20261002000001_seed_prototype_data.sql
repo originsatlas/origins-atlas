@@ -5,8 +5,19 @@
 -- Tables Populated: communities, agents, houses, source_listings,
 --                   price_history, verifications, duplicate_reviews
 -- ============================================================================
+-- SAFETY GUARD:
+-- This seed script is strictly for development and staging environments.
+-- It MUST NEVER be executed against production environments.
+-- ============================================================================
 
--- Cleanly truncate any existing data (cascading)
+DO $$
+BEGIN
+  IF current_setting('app.environment', true) = 'production' THEN
+    RAISE EXCEPTION 'CRITICAL SAFETY BLOCK: Seed script cannot be run in production.';
+  END IF;
+END $$;
+
+-- Cleanly truncate existing records for development/staging seeding
 TRUNCATE TABLE duplicate_reviews, verifications, price_history, source_listings, houses, agents, communities CASCADE;
 
 DO $$

@@ -47,12 +47,6 @@ function LoginForm() {
     }
   };
 
-  const handleFillDemo = () => {
-    setEmail('admin@originsatlas.com');
-    setPassword('OriginsAtlas2026!');
-    setError(null);
-  };
-
   return (
     <div className="admin-login-wrapper">
       {/* Background Ambience Orbs */}
@@ -199,32 +193,6 @@ function LoginForm() {
             )}
           </button>
         </form>
-
-        {/* Demo Credentials Quick-Fill Helper */}
-        {/* <div className="admin-demo-helper">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold-400)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                🔑 Default Admin Access
-              </span>
-              <button
-                type="button"
-                onClick={handleFillDemo}
-                className="btn btn-outline btn-xs"
-                style={{
-                  borderColor: 'var(--gold-500)',
-                  color: 'var(--gold-400)',
-                  padding: '3px 8px',
-                  fontSize: '11px',
-                }}
-              >
-                Fill Credentials
-              </button>
-            </div>
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>
-              <div><strong>Email:</strong> admin@originsatlas.com</div>
-              <div><strong>Password:</strong> OriginsAtlas2026!</div>
-            </div>
-          </div> */}
 
         {/* Back Link */}
         <div style={{ textAlign: 'center', marginTop: '24px' }}>

@@ -79,34 +79,29 @@ export default function EditHousePage() {
     setLoading(true);
     setError('');
 
-    const { error: updateError } = await supabase
-      .from('houses')
-      .update({
-        community_id: form.community_id,
-        house_number: form.house_number || null,
-        property_type: form.property_type,
-        bedrooms: form.bedrooms ? parseInt(form.bedrooms) : null,
-        bathrooms: form.bathrooms ? parseInt(form.bathrooms) : null,
-        parking_spaces: form.parking_spaces ? parseInt(form.parking_spaces) : null,
-        house_size_sqm: form.house_size_sqm ? parseFloat(form.house_size_sqm) : null,
-        land_size_sqm: form.land_size_sqm ? parseFloat(form.land_size_sqm) : null,
-        floors: form.floors ? parseInt(form.floors) : null,
-        year_built: form.year_built ? parseInt(form.year_built) : null,
-        description: form.description || null,
-        status: form.status as 'active' | 'sold' | 'unlisted' | 'pending_review',
-        is_new_listing: form.is_new_listing,
-        has_price_reduction: form.has_price_reduction,
-      })
-      .eq('id', houseId);
+    try {
+      const res = await fetch('/api/admin/houses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: houseId,
+          ...form,
+        }),
+      });
 
-    if (updateError) {
-      setError(updateError.message);
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setError(result.error || 'Failed to update house');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin/houses');
+      router.refresh();
+    } catch {
+      setError('Network error while updating house');
       setLoading(false);
-      return;
     }
-
-    router.push('/admin/houses');
-    router.refresh();
   };
 
   if (fetching) {
@@ -147,13 +142,14 @@ export default function EditHousePage() {
 
           <div className="form-row-3">
             <div className="form-group">
-              <label className="form-label">Property Type</label>
+              <label className="form-label">Property Type (Standardized)</label>
               <select name="property_type" value={form.property_type} onChange={handleChange} className="form-select">
                 <option value="detached_house">Detached House</option>
+                <option value="luxury_villa">Luxury Villa</option>
                 <option value="semi_detached">Semi-Detached</option>
                 <option value="townhouse">Townhouse</option>
+                <option value="penthouse">Penthouse</option>
                 <option value="condo">Condominium</option>
-                <option value="other">Other</option>
               </select>
             </div>
             <div className="form-group">

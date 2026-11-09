@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { formatUSD, formatPricePerSqm, formatDate, getVerificationDisplay } from '@/lib/utils';
+import { formatUSD, formatTHB, formatPricePerSqm, formatDate, getVerificationDisplay } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -46,7 +46,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
     .eq('id', id)
     .single();
 
-  if (!community || !house) {
+  if (!community || !house || house.is_archived || community.is_archived) {
     return (
       <>
         <Navbar activeTab="communities" />
@@ -66,7 +66,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
     );
   }
 
-  // Fetch source listings with agents
+  // Fetch source listings with agents (only active, unarchived)
   const { data: listings } = await supabase
     .from('source_listings')
     .select(`
@@ -74,7 +74,8 @@ export default async function HouseDetailPage({ params }: PageProps) {
       agents (*)
     `)
     .eq('house_id', id)
-    .order('asking_price_usd', { ascending: true });
+    .eq('is_archived', false)
+    .order('asking_price_thb', { ascending: true });
 
   // Fetch price history
   const { data: priceHistory } = await supabase
@@ -90,12 +91,24 @@ export default async function HouseDetailPage({ params }: PageProps) {
     .eq('house_id', id)
     .order('created_at', { ascending: false });
 
-  // Calculate price stats
-  const prices = (listings || [])
+  // Calculate price stats (THB primary, USD derived)
+  const pricesThb = (listings || [])
+    .map((l) => l.asking_price_thb)
+    .filter((p): p is number => p != null);
+  const pricesUsd = (listings || [])
     .map((l) => l.asking_price_usd)
     .filter((p): p is number => p != null);
-  const lowestPrice = prices.length > 0 ? Math.min(...prices) : null;
-  const highestPrice = prices.length > 0 ? Math.max(...prices) : null;
+
+  const lowestPriceThb = pricesThb.length > 0 ? Math.min(...pricesThb) : (pricesUsd.length > 0 ? Math.round(Math.min(...pricesUsd) / 0.0271) : null);
+  const highestPriceThb = pricesThb.length > 0 ? Math.max(...pricesThb) : (pricesUsd.length > 0 ? Math.round(Math.max(...pricesUsd) / 0.0271) : null);
+
+  const lowestPrice = pricesUsd.length > 0 ? Math.min(...pricesUsd) : (lowestPriceThb ? Math.round(lowestPriceThb * 0.0271) : null);
+  const highestPrice = pricesUsd.length > 0 ? Math.max(...pricesUsd) : (highestPriceThb ? Math.round(highestPriceThb * 0.0271) : null);
+
+  const priceDifferenceThb =
+    lowestPriceThb && highestPriceThb && highestPriceThb > lowestPriceThb
+      ? highestPriceThb - lowestPriceThb
+      : null;
   const priceDifference =
     lowestPrice && highestPrice && highestPrice > lowestPrice
       ? highestPrice - lowestPrice
@@ -185,26 +198,33 @@ export default async function HouseDetailPage({ params }: PageProps) {
               <span>{community.city}</span>
             </p>
 
-            {/* Price Display */}
-            {lowestPrice && (
+            {/* Price Display (THB Primary, USD Derived) */}
+            {lowestPriceThb && (
               <div style={{ marginBottom: '16px' }}>
                 <div className="house-detail-price" style={{ fontSize: 'clamp(26px, 6vw, 40px)', lineHeight: 1.2 }}>
-                  {lowestPrice === highestPrice
-                    ? formatUSD(lowestPrice)
-                    : `${formatUSD(lowestPrice)} – ${formatUSD(highestPrice)}`}
+                  {lowestPriceThb === highestPriceThb
+                    ? formatTHB(lowestPriceThb)
+                    : `${formatTHB(lowestPriceThb)} – ${formatTHB(highestPriceThb)}`}
                 </div>
-                {priceDifference && (
+                {lowestPrice && (
+                  <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.75)', fontWeight: 500, marginTop: '2px' }}>
+                    {lowestPrice === highestPrice
+                      ? `(${formatUSD(lowestPrice)} USD)`
+                      : `(${formatUSD(lowestPrice)} – ${formatUSD(highestPrice)} USD)`}
+                  </div>
+                )}
+                {priceDifferenceThb ? (
                   <p
                     style={{
                       color: 'var(--gold-300)',
                       fontSize: '13px',
                       fontWeight: 600,
-                      marginTop: '4px',
+                      marginTop: '6px',
                     }}
                   >
-                    💡 {formatUSD(priceDifference)} price variance across {listings?.length || 2} competing broker listings
+                    💡 {formatTHB(priceDifferenceThb)} ({formatUSD(priceDifference)}) price variance across {listings?.length || 2} competing broker listings
                   </p>
-                )}
+                ) : null}
               </div>
             )}
 
@@ -372,7 +392,14 @@ export default async function HouseDetailPage({ params }: PageProps) {
                               )}
                             </div>
                             <div className="listing-card-price">
-                              {formatUSD(listing.asking_price_usd)}
+                              {listing.asking_price_thb
+                                ? formatTHB(listing.asking_price_thb)
+                                : formatUSD(listing.asking_price_usd)}
+                              {listing.asking_price_thb && listing.asking_price_usd && (
+                                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', marginLeft: '6px', fontWeight: 500 }}>
+                                  ({formatUSD(listing.asking_price_usd)})
+                                </span>
+                              )}
                               {listing.price_per_sqm_usd && (
                                 <span className="listing-card-price-sqm">
                                   {' '}({formatPricePerSqm(listing.price_per_sqm_usd)})
@@ -491,8 +518,13 @@ export default async function HouseDetailPage({ params }: PageProps) {
 
                         <div className="price-history-price-col">
                           <span className="price-history-price-val">
-                            {formatUSD(entry.price_usd)}
+                            {entry.price_thb ? formatTHB(entry.price_thb) : formatUSD(entry.price_usd)}
                           </span>
+                          {entry.price_thb && entry.price_usd && (
+                            <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                              ({formatUSD(entry.price_usd)})
+                            </div>
+                          )}
                           {entry.price_per_sqm_usd && (
                             <div className="price-history-price-sqm">
                               {formatPricePerSqm(entry.price_per_sqm_usd)}

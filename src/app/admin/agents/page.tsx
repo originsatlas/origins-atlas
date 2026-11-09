@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import ArchiveButton from '@/components/admin/ArchiveButton';
 
 export const metadata = { title: 'Manage Agents — Origins Atlas Admin' };
 
@@ -53,7 +54,10 @@ export default async function AdminAgentsPage() {
                   </td>
                   <td style={{ fontSize: '13px' }}>{agent.contact_email || agent.contact_phone || '—'}</td>
                   <td>
-                    <Link href={`/admin/agents/${agent.id}/edit`} className="btn btn-sm btn-secondary">Edit</Link>
+                    <div className="data-table-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Link href={`/admin/agents/${agent.id}/edit`} className="btn btn-sm btn-secondary">Edit</Link>
+                      <ArchiveButton endpoint="agents" id={agent.id} name={agent.name} isArchived={agent.is_archived} />
+                    </div>
                   </td>
                 </tr>
               );

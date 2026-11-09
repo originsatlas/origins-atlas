@@ -33,23 +33,26 @@ export default function NewAgentPage() {
     setLoading(true);
     setError('');
 
-    const { error: insertError } = await supabase.from('agents').insert({
-      name: form.name,
-      source_platform: form.source_platform || null,
-      contact_email: form.contact_email || null,
-      contact_phone: form.contact_phone || null,
-      website_url: form.website_url || null,
-      is_verified: form.is_verified,
-    });
+    try {
+      const res = await fetch('/api/admin/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    if (insertError) {
-      setError(insertError.message);
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setError(result.error || 'Failed to create agent');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin/agents');
+      router.refresh();
+    } catch {
+      setError('Network error while saving agent');
       setLoading(false);
-      return;
     }
-
-    router.push('/admin/agents');
-    router.refresh();
   };
 
   return (

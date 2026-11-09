@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import ArchiveButton from '@/components/admin/ArchiveButton';
 
 export const metadata = { title: 'Manage Houses — Origins Atlas Admin' };
 
@@ -73,13 +74,9 @@ export default async function AdminHousesPage() {
                     {house.has_price_reduction && <span className="badge badge-price-drop">Drop</span>}
                   </td>
                   <td>
-                    <div className="data-table-actions">
+                    <div className="data-table-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Link href={`/admin/houses/${house.id}/edit`} className="btn btn-sm btn-secondary">Edit</Link>
-                      {/* Link to community commented out for now:
-                      {community?.slug && (
-                        <Link href={`/communities/${community.slug}/houses/${house.id}`} className="btn btn-sm btn-secondary">View</Link>
-                      )}
-                      */}
+                      <ArchiveButton endpoint="houses" id={house.id} name={`Unit ${house.house_number || house.id.slice(0, 8)}`} isArchived={house.is_archived} />
                     </div>
                   </td>
                 </tr>

@@ -36,6 +36,10 @@ export default function NewListingPage() {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       setForm((p) => ({ ...p, [name]: (e.target as HTMLInputElement).checked }));
+    } else if (name === 'asking_price_thb') {
+      const thb = parseFloat(value);
+      const derivedUsd = !isNaN(thb) ? (thb * 0.0271).toFixed(2) : '';
+      setForm((p) => ({ ...p, asking_price_thb: value, asking_price_usd: derivedUsd }));
     } else {
       setForm((p) => ({ ...p, [name]: value }));
     }
@@ -46,37 +50,26 @@ export default function NewListingPage() {
     setLoading(true);
     setError('');
 
-    const priceUsd = form.asking_price_usd ? parseFloat(form.asking_price_usd) : null;
-
-    const { data: listing, error: insertError } = await supabase.from('source_listings').insert({
-      house_id: form.house_id,
-      agent_id: form.agent_id,
-      source_url: form.source_url || null,
-      asking_price_usd: priceUsd,
-      asking_price_thb: form.asking_price_thb ? parseFloat(form.asking_price_thb) : null,
-      price_per_sqm_usd: form.price_per_sqm_usd ? parseFloat(form.price_per_sqm_usd) : null,
-      listing_date: form.listing_date || null,
-      last_seen_date: form.last_seen_date || null,
-      is_active: form.is_active,
-      listing_description: form.listing_description || null,
-    }).select().single();
-
-    if (insertError) { setError(insertError.message); setLoading(false); return; }
-
-    // Auto-create initial price history entry
-    if (listing && priceUsd) {
-      await supabase.from('price_history').insert({
-        source_listing_id: listing.id,
-        house_id: form.house_id,
-        price_usd: priceUsd,
-        price_per_sqm_usd: form.price_per_sqm_usd ? parseFloat(form.price_per_sqm_usd) : null,
-        recorded_date: form.listing_date || new Date().toISOString().split('T')[0],
-        change_type: 'initial',
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
       });
-    }
 
-    router.push('/admin/listings');
-    router.refresh();
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setError(result.error || 'Failed to create listing');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin/listings');
+      router.refresh();
+    } catch {
+      setError('Network error while saving listing');
+      setLoading(false);
+    }
   };
 
   return (
@@ -125,19 +118,21 @@ export default function NewListingPage() {
 
           <div className="form-row-3">
             <div className="form-group">
-              <label className="form-label">Asking Price (USD)</label>
-              <input type="number" name="asking_price_usd" value={form.asking_price_usd} onChange={handleChange}
-                className="form-input" step="0.01" placeholder="636775" />
+              <label className="form-label">Price in THB (Primary) *</label>
+              <input type="number" name="asking_price_thb" value={form.asking_price_thb} onChange={handleChange}
+                className="form-input" step="0.01" placeholder="e.g. 21450000" />
+              <span className="form-hint">Thai Baht is the source price</span>
             </div>
             <div className="form-group">
-              <label className="form-label">Price (THB)</label>
-              <input type="number" name="asking_price_thb" value={form.asking_price_thb} onChange={handleChange}
-                className="form-input" step="0.01" />
+              <label className="form-label">Asking Price in USD (Derived)</label>
+              <input type="number" name="asking_price_usd" value={form.asking_price_usd} onChange={handleChange}
+                className="form-input" step="0.01" placeholder="Auto-calculated from THB" />
+              <span className="form-hint">Auto-derived via live conversion</span>
             </div>
             <div className="form-group">
               <label className="form-label">Price/m² (USD)</label>
               <input type="number" name="price_per_sqm_usd" value={form.price_per_sqm_usd} onChange={handleChange}
-                className="form-input" step="0.01" placeholder="2203" />
+                className="form-input" step="0.01" placeholder="2017" />
             </div>
           </div>
 

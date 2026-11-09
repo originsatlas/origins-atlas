@@ -68,30 +68,30 @@ export default function EditCommunityPage() {
     setLoading(true);
     setError('');
 
-    const { error: updateError } = await supabase
-      .from('communities')
-      .update({
-        name: form.name,
-        slug: form.slug,
-        description: form.description || null,
-        location: form.location || null,
-        city: form.city || null,
-        province: form.province || null,
-        country: form.country,
-        total_units: form.total_units ? parseInt(form.total_units) : null,
-        community_type: form.community_type,
-        amenities: form.amenities ? form.amenities.split(',').map((a) => a.trim()) : [],
-      })
-      .eq('id', communityId);
+    try {
+      const res = await fetch('/api/admin/communities', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: communityId,
+          ...form,
+          amenities: form.amenities ? form.amenities.split(',').map((a) => a.trim()) : [],
+        }),
+      });
 
-    if (updateError) {
-      setError(updateError.message);
+      const result = await res.json();
+      if (!res.ok || result.error) {
+        setError(result.error || 'Failed to update community');
+        setLoading(false);
+        return;
+      }
+
+      router.push('/admin/communities');
+      router.refresh();
+    } catch {
+      setError('Network error while updating community');
       setLoading(false);
-      return;
     }
-
-    router.push('/admin/communities');
-    router.refresh();
   };
 
   if (fetching) {
@@ -160,8 +160,25 @@ export default function EditCommunityPage() {
 
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Province</label>
-              <input type="text" name="province" value={form.province} onChange={handleChange} className="form-input" />
+              <label className="form-label">Province (Standardized)</label>
+              <select
+                name="province"
+                value={form.province}
+                onChange={handleChange}
+                className="form-select"
+              >
+                <option value="">Select Province...</option>
+                <option value="Bangkok">Bangkok</option>
+                <option value="Samut Prakan">Samut Prakan</option>
+                <option value="Nonthaburi">Nonthaburi</option>
+                <option value="Pathum Thani">Pathum Thani</option>
+                <option value="Chonburi">Chonburi</option>
+                <option value="Phuket">Phuket</option>
+                <option value="Chiang Mai">Chiang Mai</option>
+                <option value="Hua Hin">Hua Hin</option>
+                <option value="Rayong">Rayong</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Country</label>

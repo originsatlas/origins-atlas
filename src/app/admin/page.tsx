@@ -46,9 +46,11 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  const formatUSD = (n: number | null) => n != null
-    ? `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-    : '—';
+  const formatDual = (thb: number | null | undefined, usd: number | null | undefined) => {
+    if (thb != null) return `฿${thb.toLocaleString('th-TH')}${usd != null ? ` ($${usd.toLocaleString('en-US')})` : ''}`;
+    if (usd != null) return `$${usd.toLocaleString('en-US')}`;
+    return '—';
+  };
 
   return (
     <>
@@ -161,7 +163,7 @@ export default async function AdminDashboard() {
                     <td style={{ fontSize: '13px' }}>{(listing.agents as any)?.name || '—'}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <td style={{ fontSize: '13px' }}>{(listing.houses as any)?.house_number || '—'}</td>
-                    <td style={{ fontWeight: 600 }}>{formatUSD(listing.asking_price_usd)}</td>
+                    <td style={{ fontWeight: 600, fontSize: '13px' }}>{formatDual(listing.asking_price_thb, listing.asking_price_usd)}</td>
                   </tr>
                 ))}
                 {(!recentListings || recentListings.length === 0) && (

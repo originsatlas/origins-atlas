@@ -4,6 +4,8 @@
  * Compatible with Next.js Edge Middleware, Server Components, and API Route Handlers.
  */
 
+import { cookies } from 'next/headers';
+
 export interface AdminSessionPayload {
   email: string;
   role: 'admin';
@@ -14,12 +16,15 @@ export interface AdminSessionPayload {
 export const ADMIN_COOKIE_NAME = 'oa_admin_session';
 export const ADMIN_SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days in seconds
 
-const DEFAULT_SECRET = 'origins-atlas-super-secret-jwt-key-2026-bangkok-nirvana';
-const DEFAULT_ADMIN_EMAIL = 'admin@originsatlas.com';
-const DEFAULT_ADMIN_PASSWORD = 'OriginsAtlas2026!';
-
 function getSecretKey(): string {
-  return process.env.ADMIN_SESSION_SECRET || DEFAULT_SECRET;
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (!secret) {
+    throw new Error(
+      'SECURITY CONFIGURATION ERROR: ADMIN_SESSION_SECRET environment variable is missing. ' +
+      'Admin session creation and verification cannot proceed without an explicitly configured secret.'
+    );
+  }
+  return secret;
 }
 
 // Convert ArrayBuffer to URL-safe base64 string
@@ -147,8 +152,15 @@ export async function validateAdminCredentials(
     return { valid: false, error: 'Email and password are required' };
   }
 
-  const configuredEmail = (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim().toLowerCase();
-  const configuredPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+  const configuredEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const configuredPassword = process.env.ADMIN_PASSWORD;
+
+  if (!configuredEmail || !configuredPassword) {
+    return {
+      valid: false,
+      error: 'Admin authentication is not configured on the server. Please define ADMIN_EMAIL and ADMIN_PASSWORD environment variables.',
+    };
+  }
 
   // 1. Check primary configured admin credentials
   if (email === configuredEmail && password === configuredPassword) {
@@ -176,4 +188,19 @@ export async function validateAdminCredentials(
   }
 
   return { valid: false, error: 'Invalid email or password' };
+}
+
+/**
+ * Server-side helper to verify admin session from Next.js request cookies.
+ * Returns payload if authenticated, or null if unauthorized.
+ */
+export async function requireAdminSession(): Promise<AdminSessionPayload | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+    if (!token) return null;
+    return await verifySessionToken(token);
+  } catch {
+    return null;
+  }
 }

@@ -9,17 +9,20 @@ export default async function HomePage() {
   const { data: communities } = await supabase
     .from('communities')
     .select('*')
+    .eq('is_archived', false)
     .order('name');
 
   const { count: totalHouses } = await supabase
     .from('houses')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'active');
+    .eq('status', 'active')
+    .eq('is_archived', false);
 
   const { count: totalListings } = await supabase
     .from('source_listings')
     .select('*', { count: 'exact', head: true })
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .eq('is_archived', false);
 
   return (
     <>

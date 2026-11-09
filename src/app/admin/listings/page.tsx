@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import ArchiveButton from '@/components/admin/ArchiveButton';
 
 export const metadata = { title: 'Manage Listings — Origins Atlas Admin' };
 
@@ -15,8 +16,11 @@ export default async function AdminListingsPage() {
     `)
     .order('created_at', { ascending: false });
 
-  const formatUSD = (n: number | null) =>
-    n != null ? `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : '—';
+  const formatDual = (thb: number | null | undefined, usd: number | null | undefined) => {
+    if (thb != null) return `฿${thb.toLocaleString('th-TH')}${usd != null ? ` ($${usd.toLocaleString('en-US')})` : ''}`;
+    if (usd != null) return `$${usd.toLocaleString('en-US')}`;
+    return '—';
+  };
 
   return (
     <>
@@ -34,7 +38,7 @@ export default async function AdminListingsPage() {
             <tr>
               <th>Agent</th>
               <th>House</th>
-              <th>Price (USD)</th>
+              <th>Asking Price (THB / USD)</th>
               <th>$/m²</th>
               <th>Platform</th>
               <th>Active</th>
@@ -52,7 +56,7 @@ export default async function AdminListingsPage() {
                 <tr key={listing.id}>
                   <td style={{ fontSize: '13px' }}><strong>{agent?.name || '—'}</strong></td>
                   <td style={{ fontSize: '13px' }}>{house?.house_number || '—'}</td>
-                  <td style={{ fontWeight: 600 }}>{formatUSD(listing.asking_price_usd)}</td>
+                  <td style={{ fontWeight: 600, fontSize: '13px' }}>{formatDual(listing.asking_price_thb, listing.asking_price_usd)}</td>
                   <td style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>
                     {listing.price_per_sqm_usd ? `$${listing.price_per_sqm_usd.toLocaleString()}` : '—'}
                   </td>
@@ -66,8 +70,9 @@ export default async function AdminListingsPage() {
                   </td>
                   <td style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{listing.listing_date || '—'}</td>
                   <td>
-                    <div className="data-table-actions">
+                    <div className="data-table-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Link href={`/admin/listings/${listing.id}/edit`} className="btn btn-sm btn-secondary">Edit</Link>
+                      <ArchiveButton endpoint="listings" id={listing.id} name={`Listing #${listing.id.slice(0, 8)}`} isArchived={listing.is_archived} />
                     </div>
                   </td>
                 </tr>
