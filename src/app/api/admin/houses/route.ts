@@ -36,33 +36,48 @@ export async function POST(request: Request) {
     }
 
     const supabase = getAdminSupabaseClient();
-    const { data, error } = await supabase
+    const basePayload = {
+      community_id,
+      house_number: house_number || null,
+      address: address || null,
+      property_type: property_type || 'detached_house',
+      bedrooms: bedrooms ? parseInt(bedrooms) : null,
+      bathrooms: bathrooms ? parseInt(bathrooms) : null,
+      parking_spaces: parking_spaces ? parseInt(parking_spaces) : null,
+      house_size_sqm: house_size_sqm ? parseFloat(house_size_sqm) : null,
+      land_size_sqm: land_size_sqm ? parseFloat(land_size_sqm) : null,
+      floors: floors ? parseInt(floors) : null,
+      year_built: year_built ? parseInt(year_built) : null,
+      features: Array.isArray(features) ? features : [],
+      description: description || null,
+      main_image_url: main_image_url || null,
+      image_urls: Array.isArray(image_urls) ? image_urls : [],
+      status: status || 'active',
+      is_new_listing: is_new_listing ?? true,
+      has_price_reduction: has_price_reduction ?? false,
+    };
+
+    let { data, error } = await supabase
       .from('houses')
       .insert({
-        community_id,
-        house_number: house_number || null,
-        address: address || null,
-        property_type: property_type || 'detached_house',
-        bedrooms: bedrooms ? parseInt(bedrooms) : null,
-        bathrooms: bathrooms ? parseInt(bathrooms) : null,
-        parking_spaces: parking_spaces ? parseInt(parking_spaces) : null,
-        house_size_sqm: house_size_sqm ? parseFloat(house_size_sqm) : null,
-        land_size_sqm: land_size_sqm ? parseFloat(land_size_sqm) : null,
-        floors: floors ? parseInt(floors) : null,
-        year_built: year_built ? parseInt(year_built) : null,
-        features: Array.isArray(features) ? features : [],
-        description: description || null,
-        main_image_url: main_image_url || null,
-        image_urls: Array.isArray(image_urls) ? image_urls : [],
-        status: status || 'active',
-        is_new_listing: is_new_listing ?? true,
-        has_price_reduction: has_price_reduction ?? false,
+        ...basePayload,
         is_archived: false,
         created_by: session.email,
         updated_by: session.email,
       } as any)
       .select()
       .single();
+
+    // Fallback if Stage 1 columns have not yet been migrated in Supabase
+    if (error && (error.message?.includes('created_by') || error.message?.includes('is_archived'))) {
+      const fallback = await supabase
+        .from('houses')
+        .insert(basePayload as any)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -119,33 +134,48 @@ export async function PUT(request: Request) {
     const supabase = getAdminSupabaseClient();
     const { data: existing } = await supabase.from('houses').select('*').eq('id', id).single();
 
-    const { data, error } = await supabase
+    const baseUpdate = {
+      community_id,
+      house_number: house_number || null,
+      address: address || null,
+      property_type: property_type || 'detached_house',
+      bedrooms: bedrooms ? parseInt(bedrooms) : null,
+      bathrooms: bathrooms ? parseInt(bathrooms) : null,
+      parking_spaces: parking_spaces ? parseInt(parking_spaces) : null,
+      house_size_sqm: house_size_sqm ? parseFloat(house_size_sqm) : null,
+      land_size_sqm: land_size_sqm ? parseFloat(land_size_sqm) : null,
+      floors: floors ? parseInt(floors) : null,
+      year_built: year_built ? parseInt(year_built) : null,
+      features: Array.isArray(features) ? features : [],
+      description: description || null,
+      main_image_url: main_image_url || null,
+      image_urls: Array.isArray(image_urls) ? image_urls : [],
+      status: status || 'active',
+      is_new_listing: is_new_listing ?? true,
+      has_price_reduction: has_price_reduction ?? false,
+      updated_at: new Date().toISOString(),
+    };
+
+    let { data, error } = await supabase
       .from('houses')
       .update({
-        community_id,
-        house_number: house_number || null,
-        address: address || null,
-        property_type: property_type || 'detached_house',
-        bedrooms: bedrooms ? parseInt(bedrooms) : null,
-        bathrooms: bathrooms ? parseInt(bathrooms) : null,
-        parking_spaces: parking_spaces ? parseInt(parking_spaces) : null,
-        house_size_sqm: house_size_sqm ? parseFloat(house_size_sqm) : null,
-        land_size_sqm: land_size_sqm ? parseFloat(land_size_sqm) : null,
-        floors: floors ? parseInt(floors) : null,
-        year_built: year_built ? parseInt(year_built) : null,
-        features: Array.isArray(features) ? features : [],
-        description: description || null,
-        main_image_url: main_image_url || null,
-        image_urls: Array.isArray(image_urls) ? image_urls : [],
-        status: status || 'active',
-        is_new_listing: is_new_listing ?? true,
-        has_price_reduction: has_price_reduction ?? false,
+        ...baseUpdate,
         updated_by: session.email,
-        updated_at: new Date().toISOString(),
       } as any)
       .eq('id', id)
       .select()
       .single();
+
+    if (error && error.message?.includes('updated_by')) {
+      const fallback = await supabase
+        .from('houses')
+        .update(baseUpdate as any)
+        .eq('id', id)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -184,7 +214,7 @@ export async function DELETE(request: Request) {
     const { data: existing } = await supabase.from('houses').select('*').eq('id', id).single();
 
     // Soft delete (archive)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('houses')
       .update({
         is_archived: true,
@@ -196,6 +226,18 @@ export async function DELETE(request: Request) {
       .eq('id', id)
       .select()
       .single();
+
+    // Fallback if is_archived column does not exist yet
+    if (error && error.message?.includes('is_archived')) {
+      const fallback = await supabase
+        .from('houses')
+        .delete()
+        .eq('id', id);
+      if (fallback.error) {
+        return NextResponse.json({ error: fallback.error.message }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, message: 'Deleted' });
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -216,3 +258,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
+

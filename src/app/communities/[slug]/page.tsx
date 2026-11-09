@@ -33,10 +33,9 @@ export default async function CommunityPage({ params }: PageProps) {
     .from('communities')
     .select('*')
     .eq('slug', slug)
-    .eq('is_archived', false)
     .single();
 
-  if (!community) {
+  if (!community || (community as any).is_archived === true) {
     return (
       <>
         <Navbar activeTab="communities" />
@@ -54,7 +53,7 @@ export default async function CommunityPage({ params }: PageProps) {
   }
 
   // Fetch houses with their source listings and agents
-  const { data: houses } = await supabase
+  const { data: rawHouses } = await supabase
     .from('houses')
     .select(`
       *,
@@ -76,9 +75,11 @@ export default async function CommunityPage({ params }: PageProps) {
       )
     `)
     .eq('community_id', community.id)
-    .eq('is_archived', false)
     .in('status', ['active', 'pending_review'])
     .order('created_at', { ascending: false });
+
+  // Filter out any archived records safely
+  const houses = (rawHouses || []).filter((h: any) => h.is_archived !== true);
 
   // Count active houses and total listings
   const activeHouses = houses?.filter((h) => h.status === 'active') || [];

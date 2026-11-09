@@ -294,3 +294,4 @@ CREATE POLICY "Admin write on duplicate_reviews" ON duplicate_reviews
 
 CREATE POLICY "Admin write on audit_logs" ON audit_logs
   FOR INSERT TO authenticated, service_role WITH CHECK (true);
+

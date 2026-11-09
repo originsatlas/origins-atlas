@@ -12,11 +12,12 @@ export const metadata: Metadata = {
 export default async function CommunitiesPage() {
   const supabase = await createServerSupabaseClient();
 
-  const { data: communities } = await supabase
+  const { data: rawCommunities } = await supabase
     .from('communities')
     .select('*')
-    .eq('is_archived', false)
     .order('name');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const communities = rawCommunities?.filter((c: any) => c.is_archived !== true) || [];
 
   return (
     <>

@@ -66,3 +66,4 @@ export default function ArchiveButton({ endpoint, id, name, isArchived }: Archiv
     </button>
   );
 }
+

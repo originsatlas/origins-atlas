@@ -46,7 +46,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
     .eq('id', id)
     .single();
 
-  if (!community || !house || house.is_archived || community.is_archived) {
+  if (!community || !house || (house as any).is_archived === true || (community as any).is_archived === true) {
     return (
       <>
         <Navbar activeTab="communities" />
@@ -67,15 +67,16 @@ export default async function HouseDetailPage({ params }: PageProps) {
   }
 
   // Fetch source listings with agents (only active, unarchived)
-  const { data: listings } = await supabase
+  const { data: rawListings } = await supabase
     .from('source_listings')
     .select(`
       *,
       agents (*)
     `)
     .eq('house_id', id)
-    .eq('is_archived', false)
     .order('asking_price_thb', { ascending: true });
+
+  const listings = (rawListings || []).filter((l: any) => l.is_archived !== true);
 
   // Fetch price history
   const { data: priceHistory } = await supabase

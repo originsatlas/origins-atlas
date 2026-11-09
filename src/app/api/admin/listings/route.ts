@@ -41,28 +41,43 @@ export async function POST(request: Request) {
     }
 
     const supabase = getAdminSupabaseClient();
-    const { data, error } = await supabase
+    const basePayload = {
+      house_id,
+      agent_id,
+      source_url: source_url || null,
+      source_listing_id: source_listing_id || null,
+      asking_price_thb: finalThb,
+      asking_price_usd: finalUsd,
+      price_per_sqm_usd: price_per_sqm_usd ? parseFloat(price_per_sqm_usd) : null,
+      listing_date: listing_date || null,
+      last_seen_date: last_seen_date || null,
+      is_active: is_active ?? true,
+      listing_description: listing_description || null,
+      listing_images: Array.isArray(listing_images) ? listing_images : [],
+    };
+
+    let { data, error } = await supabase
       .from('source_listings')
       .insert({
-        house_id,
-        agent_id,
-        source_url: source_url || null,
-        source_listing_id: source_listing_id || null,
-        asking_price_thb: finalThb,
-        asking_price_usd: finalUsd,
+        ...basePayload,
         price_per_sqm_thb: price_per_sqm_thb ? parseFloat(price_per_sqm_thb) : null,
-        price_per_sqm_usd: price_per_sqm_usd ? parseFloat(price_per_sqm_usd) : null,
-        listing_date: listing_date || null,
-        last_seen_date: last_seen_date || null,
-        is_active: is_active ?? true,
-        listing_description: listing_description || null,
-        listing_images: Array.isArray(listing_images) ? listing_images : [],
         is_archived: false,
         created_by: session.email,
         updated_by: session.email,
       } as any)
       .select()
       .single();
+
+    // Fallback if Stage 1 columns have not yet been migrated in Supabase
+    if (error && (error.message?.includes('created_by') || error.message?.includes('is_archived') || error.message?.includes('price_per_sqm_thb'))) {
+      const fallback = await supabase
+        .from('source_listings')
+        .insert(basePayload as any)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -126,28 +141,43 @@ export async function PUT(request: Request) {
     const supabase = getAdminSupabaseClient();
     const { data: existing } = await supabase.from('source_listings').select('*').eq('id', id).single();
 
-    const { data, error } = await supabase
+    const baseUpdate = {
+      house_id,
+      agent_id,
+      source_url: source_url || null,
+      source_listing_id: source_listing_id || null,
+      asking_price_thb: finalThb,
+      asking_price_usd: finalUsd,
+      price_per_sqm_usd: price_per_sqm_usd ? parseFloat(price_per_sqm_usd) : null,
+      listing_date: listing_date || null,
+      last_seen_date: last_seen_date || null,
+      is_active: is_active ?? true,
+      listing_description: listing_description || null,
+      listing_images: Array.isArray(listing_images) ? listing_images : [],
+      updated_at: new Date().toISOString(),
+    };
+
+    let { data, error } = await supabase
       .from('source_listings')
       .update({
-        house_id,
-        agent_id,
-        source_url: source_url || null,
-        source_listing_id: source_listing_id || null,
-        asking_price_thb: finalThb,
-        asking_price_usd: finalUsd,
+        ...baseUpdate,
         price_per_sqm_thb: price_per_sqm_thb ? parseFloat(price_per_sqm_thb) : null,
-        price_per_sqm_usd: price_per_sqm_usd ? parseFloat(price_per_sqm_usd) : null,
-        listing_date: listing_date || null,
-        last_seen_date: last_seen_date || null,
-        is_active: is_active ?? true,
-        listing_description: listing_description || null,
-        listing_images: Array.isArray(listing_images) ? listing_images : [],
         updated_by: session.email,
-        updated_at: new Date().toISOString(),
       } as any)
       .eq('id', id)
       .select()
       .single();
+
+    if (error && (error.message?.includes('updated_by') || error.message?.includes('price_per_sqm_thb'))) {
+      const fallback = await supabase
+        .from('source_listings')
+        .update(baseUpdate as any)
+        .eq('id', id)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -189,7 +219,7 @@ export async function DELETE(request: Request) {
     const { data: existing } = await supabase.from('source_listings').select('*').eq('id', id).single();
 
     // Soft delete (archive)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('source_listings')
       .update({
         is_archived: true,
@@ -201,6 +231,18 @@ export async function DELETE(request: Request) {
       .eq('id', id)
       .select()
       .single();
+
+    // Fallback if is_archived column does not exist yet
+    if (error && error.message?.includes('is_archived')) {
+      const fallback = await supabase
+        .from('source_listings')
+        .delete()
+        .eq('id', id);
+      if (fallback.error) {
+        return NextResponse.json({ error: fallback.error.message }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, message: 'Deleted' });
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -221,3 +263,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
+

@@ -6,23 +6,22 @@ import Footer from '@/components/Footer';
 export default async function HomePage() {
   const supabase = await createServerSupabaseClient();
 
-  const { data: communities } = await supabase
+  const { data: rawCommunities } = await supabase
     .from('communities')
     .select('*')
-    .eq('is_archived', false)
     .order('name');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const communities = rawCommunities?.filter((c: any) => c.is_archived !== true) || [];
 
   const { count: totalHouses } = await supabase
     .from('houses')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'active')
-    .eq('is_archived', false);
+    .eq('status', 'active');
 
   const { count: totalListings } = await supabase
     .from('source_listings')
     .select('*', { count: 'exact', head: true })
-    .eq('is_active', true)
-    .eq('is_archived', false);
+    .eq('is_active', true);
 
   return (
     <>
