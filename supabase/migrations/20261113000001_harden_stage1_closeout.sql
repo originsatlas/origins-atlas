@@ -72,3 +72,4 @@ CREATE POLICY "Admin write on duplicate_reviews" ON duplicate_reviews
 DROP POLICY IF EXISTS "Admin write on audit_logs" ON audit_logs;
 CREATE POLICY "Admin write on audit_logs" ON audit_logs
   FOR INSERT TO service_role WITH CHECK (true);
+
