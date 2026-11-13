@@ -1,7 +1,7 @@
 # Origins Atlas — Technical Architecture & Database Specification
-**Document Version:** 1.1.0 (Stage 1 Technical Foundation & Security Hardening)  
+**Document Version:** 1.2.0 (Stage 1 Architecture Review Close-Out)  
 **Target Audience:** Independent Technical Architecture Reviewers & Engineering Stakeholders  
-**Scope:** Stage 1 Security & Data-Protection Hardening
+**Scope:** Stage 1 Security & Data-Protection Hardening (Complete)
 
 ---
 
@@ -250,9 +250,10 @@ Admins can review candidate pairs side-by-side in `/admin/duplicates` and mark t
 - **Framework:** Next.js 16.3.6 (Turbopack, TypeScript, React 19).
 - **Styling Architecture:** Custom luxury design system (`globals.css`) with obsidian/gold themes, glassmorphism, responsive navigation, and mobile drawer views.
 - **Database:** Supabase PostgreSQL 15+.
-- **Authentication & Security:** Hardened HMAC-SHA256 session token system built on Web Crypto API (`src/lib/auth.ts`). Fallback credentials and secrets have been removed; strictly requires environment configuration (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`). Validated at the edge via middleware.
-- **Database Access Control:** Public `anon` role is strictly read-only (`SELECT` only on non-archived rows). All mutations are executed via authenticated server API routes (`/api/admin/*`) utilizing the Supabase service role key and session validation.
-- **Data Integrity & Auditability:** Triggers guarantee append-only price history, automated change logging, and comprehensive audit tracking via `audit_logs`. Soft delete preserves historical integrity across all entities.
+- **Authentication & Security:** Hardened HMAC-SHA256 session token system built on Web Crypto API (`src/lib/auth.ts`). Supabase Auth fallback and default credentials/secrets have been completely removed; strictly requires environment configuration (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`). Validated at the edge via middleware.
+- **Database Access Control (Strict Service-Role Isolation):** Both the public `anon` role and standard `authenticated` Supabase user roles are strictly read-only (`SELECT` only). All mutations execute exclusively via authenticated server API routes (`/api/admin/*`) utilizing the mandatory `SUPABASE_SERVICE_ROLE_KEY` with zero fallback to `anon`.
+- **Data Integrity & Auditability:** Triggers guarantee append-only price history, automated change logging, and comprehensive audit tracking via `audit_logs`. Soft delete (`is_archived`) is the exclusive deletion model across all entities; hard-delete fallbacks have been removed.
+- **Seed Safeguards:** Destructive TRUNCATE operations in seed scripts are fail-safe and strictly blocked unless explicit session environment approval is provided (`app.environment` in development/staging and `app.allow_destructive_reset = 'true'`).
 
 ---
 
@@ -270,6 +271,7 @@ Admin credentials are now securely managed via environment variables (no default
 | **Email** | `ADMIN_EMAIL` | Set in deployment environment (.env) |
 | **Password** | `ADMIN_PASSWORD` | Set in deployment environment (.env) |
 | **Signing Secret** | `ADMIN_SESSION_SECRET` | 32+ character high-entropy key |
+| **Service Role Key** | `SUPABASE_SERVICE_ROLE_KEY` | Server-side only; required for all admin mutations |
 | **Session Lifetime** | 7 Days (Stateless `origins_admin_session` HttpOnly cookie) | Secure, SameSite=Lax |
 
 ### 6.2. Recommended Workflows for Reviewer Verification
@@ -282,10 +284,10 @@ Admin credentials are now securely managed via environment variables (no default
 2. **Communities Workflow (`/admin/communities`):**
    - View existing community (*Nirvana Absolute Bangna*).
    - Test the **"Add Community"** modal (`/admin/communities/new`) to observe validation, standardized province dropdowns, auto-slug generation, and array handling for amenities.
-   - Inspect edit and archive operations (`ArchiveButton`).
+   - Inspect edit and archive operations with custom confirmation modal (`ArchiveButton`).
 
 3. **Canonical Houses Workflow (`/admin/houses`):**
-   - Inspect the 6 canonical house units. Note the status flags (`active`, `pending_review`).
+   - Inspect the canonical house units. Note the status flags (`active`, `pending_review`).
    - Test filtering by Community and Status.
    - Test the **"Add House"** workflow (`/admin/houses/new`) to see standardized property types, specifications, coordinates, and photo galleries.
 
@@ -309,7 +311,8 @@ Admin credentials are now securely managed via environment variables (no default
 All database definition assets are organized sequentially within the project repository:
 - **Sequential Migrations Directory:** [`supabase/migrations/`](./supabase/migrations/)
   - `20260926000001_initial_schema.sql` (Full relational DDL)
-  - `20261002000001_seed_prototype_data.sql` (Protected seed data with production guard)
+  - `20261002000001_seed_prototype_data.sql` (Protected seed data with strict whitelist guard)
   - `20261109000001_security_and_foundation.sql` (Stage 1 Security & Foundation migration: anon lockdown, soft delete, audit logging, price triggers, standard constraints)
+  - `20261113000001_harden_stage1_closeout.sql` (Stage 1 Close-Out: authenticated write revocation, exclusive service_role write access, hardened RLS policies)
 - **Standalone Schema DDL Export:** [`supabase/schema.sql`](./supabase/schema.sql)
-- **Standalone Seed Data Export:** [`supabase/seed.sql`](./supabase/seed.sql) (includes production environment guard)
+- **Standalone Seed Data Export:** [`supabase/seed.sql`](./supabase/seed.sql) (includes strict fail-safe environment approval guard)

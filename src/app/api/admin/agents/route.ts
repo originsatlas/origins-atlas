@@ -17,37 +17,22 @@ export async function POST(request: Request) {
     }
 
     const supabase = getAdminSupabaseClient();
-    const basePayload = {
-      name,
-      source_platform: source_platform || null,
-      contact_email: contact_email || null,
-      contact_phone: contact_phone || null,
-      website_url: website_url || null,
-      logo_url: logo_url || null,
-      is_verified: is_verified ?? false,
-    };
-
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('agents')
       .insert({
-        ...basePayload,
+        name,
+        source_platform: source_platform || null,
+        contact_email: contact_email || null,
+        contact_phone: contact_phone || null,
+        website_url: website_url || null,
+        logo_url: logo_url || null,
+        is_verified: is_verified ?? false,
         is_archived: false,
         created_by: session.email,
         updated_by: session.email,
       } as any)
       .select()
       .single();
-
-    // Fallback if Stage 1 columns have not yet been migrated in Supabase
-    if (error && (error.message?.includes('created_by') || error.message?.includes('is_archived'))) {
-      const fallback = await supabase
-        .from('agents')
-        .insert(basePayload as any)
-        .select()
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -84,37 +69,22 @@ export async function PUT(request: Request) {
     const supabase = getAdminSupabaseClient();
     const { data: existing } = await supabase.from('agents').select('*').eq('id', id).single();
 
-    const baseUpdate = {
-      name,
-      source_platform: source_platform || null,
-      contact_email: contact_email || null,
-      contact_phone: contact_phone || null,
-      website_url: website_url || null,
-      logo_url: logo_url || null,
-      is_verified: is_verified ?? false,
-      updated_at: new Date().toISOString(),
-    };
-
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('agents')
       .update({
-        ...baseUpdate,
+        name,
+        source_platform: source_platform || null,
+        contact_email: contact_email || null,
+        contact_phone: contact_phone || null,
+        website_url: website_url || null,
+        logo_url: logo_url || null,
+        is_verified: is_verified ?? false,
         updated_by: session.email,
+        updated_at: new Date().toISOString(),
       } as any)
       .eq('id', id)
       .select()
       .single();
-
-    if (error && error.message?.includes('updated_by')) {
-      const fallback = await supabase
-        .from('agents')
-        .update(baseUpdate as any)
-        .eq('id', id)
-        .select()
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -152,8 +122,8 @@ export async function DELETE(request: Request) {
     const supabase = getAdminSupabaseClient();
     const { data: existing } = await supabase.from('agents').select('*').eq('id', id).single();
 
-    // Soft delete (archive)
-    let { data, error } = await supabase
+    // Soft delete (archive) — Archive is the exclusive deletion behavior
+    const { data, error } = await supabase
       .from('agents')
       .update({
         is_archived: true,
@@ -164,18 +134,6 @@ export async function DELETE(request: Request) {
       .eq('id', id)
       .select()
       .single();
-
-    // Fallback if is_archived column does not exist yet
-    if (error && error.message?.includes('is_archived')) {
-      const fallback = await supabase
-        .from('agents')
-        .delete()
-        .eq('id', id);
-      if (fallback.error) {
-        return NextResponse.json({ error: fallback.error.message }, { status: 400 });
-      }
-      return NextResponse.json({ success: true, message: 'Deleted' });
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

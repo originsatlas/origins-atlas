@@ -5,14 +5,21 @@ export const THB_TO_USD_EXCHANGE_RATE = 0.0271; // 1 THB = ~0.0271 USD (approx 3
 
 /**
  * Get an administrative Supabase client for secure server-side mutations.
- * Prefers SUPABASE_SERVICE_ROLE_KEY to bypass RLS policies when public writes are locked down.
+ * Strictly requires SUPABASE_SERVICE_ROLE_KEY with NO fallback to the anon key.
  */
 export function getAdminSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error('Missing Supabase URL or client key in server environment.');
+  if (!supabaseUrl) {
+    throw new Error('SECURITY CONFIGURATION ERROR: Missing NEXT_PUBLIC_SUPABASE_URL in server environment.');
+  }
+
+  if (!serviceKey) {
+    throw new Error(
+      'SECURITY CONFIGURATION ERROR: SUPABASE_SERVICE_ROLE_KEY is required for administrative mutations. ' +
+      'Fallback to the public anon key has been strictly disabled to ensure all database writes execute exclusively through the service role.'
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

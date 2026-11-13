@@ -17,40 +17,25 @@ export async function POST(request: Request) {
     }
 
     const supabase = getAdminSupabaseClient();
-    const basePayload = {
-      name,
-      slug,
-      description: description || null,
-      location: location || null,
-      city: city || null,
-      province: province || null,
-      country: country || 'TH',
-      total_units: total_units ? parseInt(total_units) : null,
-      community_type: community_type || 'gated_community',
-      amenities: Array.isArray(amenities) ? amenities : [],
-    };
-
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('communities')
       .insert({
-        ...basePayload,
+        name,
+        slug,
+        description: description || null,
+        location: location || null,
+        city: city || null,
+        province: province || null,
+        country: country || 'TH',
+        total_units: total_units ? parseInt(total_units) : null,
+        community_type: community_type || 'gated_community',
+        amenities: Array.isArray(amenities) ? amenities : [],
         created_by: session.email,
         updated_by: session.email,
         is_archived: false,
       } as any)
       .select()
       .single();
-
-    // Graceful fallback if Stage 1 columns have not yet been migrated in Supabase
-    if (error && (error.message?.includes('created_by') || error.message?.includes('is_archived'))) {
-      const fallback = await supabase
-        .from('communities')
-        .insert(basePayload as any)
-        .select()
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -89,41 +74,25 @@ export async function PUT(request: Request) {
     // Fetch existing for audit log
     const { data: existing } = await supabase.from('communities').select('*').eq('id', id).single();
 
-    const baseUpdate = {
-      name,
-      slug,
-      description: description || null,
-      location: location || null,
-      city: city || null,
-      province: province || null,
-      country: country || 'TH',
-      total_units: total_units ? parseInt(total_units) : null,
-      community_type: community_type || 'gated_community',
-      amenities: Array.isArray(amenities) ? amenities : [],
-      updated_at: new Date().toISOString(),
-    };
-
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from('communities')
       .update({
-        ...baseUpdate,
+        name,
+        slug,
+        description: description || null,
+        location: location || null,
+        city: city || null,
+        province: province || null,
+        country: country || 'TH',
+        total_units: total_units ? parseInt(total_units) : null,
+        community_type: community_type || 'gated_community',
+        amenities: Array.isArray(amenities) ? amenities : [],
         updated_by: session.email,
+        updated_at: new Date().toISOString(),
       } as any)
       .eq('id', id)
       .select()
       .single();
-
-    // Fallback if updated_by column does not exist yet
-    if (error && error.message?.includes('updated_by')) {
-      const fallback = await supabase
-        .from('communities')
-        .update(baseUpdate as any)
-        .eq('id', id)
-        .select()
-        .single();
-      data = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -161,8 +130,8 @@ export async function DELETE(request: Request) {
     const supabase = getAdminSupabaseClient();
     const { data: existing } = await supabase.from('communities').select('*').eq('id', id).single();
 
-    // Soft delete (archive)
-    let { data, error } = await supabase
+    // Soft delete (archive) — Archive is the exclusive deletion behavior
+    const { data, error } = await supabase
       .from('communities')
       .update({
         is_archived: true,
@@ -173,18 +142,6 @@ export async function DELETE(request: Request) {
       .eq('id', id)
       .select()
       .single();
-
-    // Fallback if is_archived column does not exist yet
-    if (error && error.message?.includes('is_archived')) {
-      const fallback = await supabase
-        .from('communities')
-        .delete()
-        .eq('id', id);
-      if (fallback.error) {
-        return NextResponse.json({ error: fallback.error.message }, { status: 400 });
-      }
-      return NextResponse.json({ success: true, message: 'Deleted' });
-    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -167,26 +167,8 @@ export async function validateAdminCredentials(
     return { valid: true, email: configuredEmail };
   }
 
-  // 2. Allow secondary check via Supabase Auth (if user configured Supabase Auth account)
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseAnonKey) {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (!error && data?.user?.email) {
-        return { valid: true, email: data.user.email };
-      }
-    }
-  } catch {
-    // Ignore Supabase auth check fallback errors
-  }
-
+  // Supabase Auth admin fallback has been removed per security close-out requirements.
+  // Administrative access is strictly restricted to explicitly configured admin credentials.
   return { valid: false, error: 'Invalid email or password' };
 }
 

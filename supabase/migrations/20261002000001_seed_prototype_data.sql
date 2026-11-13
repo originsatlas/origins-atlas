@@ -6,14 +6,24 @@
 --                   price_history, verifications, duplicate_reviews
 -- ============================================================================
 -- SAFETY GUARD:
--- This seed script is strictly for development and staging environments.
--- It MUST NEVER be executed against production environments.
+-- This seed script contains destructive TRUNCATE statements.
+-- It is strictly blocked by default and requires explicit environment authorization.
 -- ============================================================================
 
 DO $$
+DECLARE
+  v_env TEXT := current_setting('app.environment', true);
+  v_allow_reset TEXT := current_setting('app.allow_destructive_reset', true);
 BEGIN
-  IF current_setting('app.environment', true) = 'production' THEN
-    RAISE EXCEPTION 'CRITICAL SAFETY BLOCK: Seed script cannot be run in production.';
+  -- Strict whitelist guard: Destructive truncate is blocked unless environment is explicitly approved
+  IF v_env NOT IN ('development', 'staging', 'test') OR v_allow_reset != 'true' THEN
+    RAISE EXCEPTION 'CRITICAL SAFETY GUARD: Destructive seed/reset is blocked.
+      To run this script on development or staging, you must explicitly approve the session:
+        SET app.environment = ''development'';  -- or ''staging''
+        SET app.allow_destructive_reset = ''true'';
+      Current settings: app.environment = "%", app.allow_destructive_reset = "%"',
+      COALESCE(v_env, '<unset>'),
+      COALESCE(v_allow_reset, '<unset>');
   END IF;
 END $$;
 

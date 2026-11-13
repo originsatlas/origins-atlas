@@ -361,30 +361,30 @@ CREATE POLICY "Allow public read on verifications" ON verifications FOR SELECT U
 CREATE POLICY "Allow public read on duplicate_reviews" ON duplicate_reviews FOR SELECT USING (true);
 CREATE POLICY "Allow public read on audit_logs" ON audit_logs FOR SELECT USING (true);
 
--- 2. Admin Write Policies (Strictly restricted to service_role and authenticated users)
-CREATE POLICY "Admin write on communities" ON communities FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on houses" ON houses FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on agents" ON agents FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on source_listings" ON source_listings FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on price_history" ON price_history FOR INSERT TO authenticated, service_role WITH CHECK (true);
-CREATE POLICY "Admin write on verifications" ON verifications FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on duplicate_reviews" ON duplicate_reviews FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
-CREATE POLICY "Admin write on audit_logs" ON audit_logs FOR INSERT TO authenticated, service_role WITH CHECK (true);
+-- 2. Admin Write Policies (Strictly restricted to service_role)
+CREATE POLICY "Admin write on communities" ON communities FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on houses" ON houses FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on agents" ON agents FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on source_listings" ON source_listings FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on price_history" ON price_history FOR INSERT TO service_role WITH CHECK (true);
+CREATE POLICY "Admin write on verifications" ON verifications FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on duplicate_reviews" ON duplicate_reviews FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "Admin write on audit_logs" ON audit_logs FOR INSERT TO service_role WITH CHECK (true);
 
 -- ============================================================================
--- ROLE PRIVILEGES: LOCK DOWN PUBLIC WRITES
+-- ROLE PRIVILEGES: LOCK DOWN PUBLIC & AUTHENTICATED WRITES
 -- ============================================================================
--- anon role: Strictly USAGE on schema and SELECT on tables. ZERO write permissions.
-GRANT USAGE ON SCHEMA public TO anon;
-REVOKE INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public FROM anon;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+-- anon & authenticated roles: Strictly USAGE on schema and SELECT on tables. ZERO direct write permissions.
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+REVOKE INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 
--- service_role and authenticated roles: Full administrative access
-GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role, authenticated;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO service_role, authenticated;
+-- service_role: Full administrative management access for backend API routes
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO service_role;
 
--- Ensure future tables default to secure read-only for anon
-ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE INSERT, UPDATE, DELETE ON TABLES FROM anon;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role, authenticated;
+-- Ensure future tables default to secure read-only for anon and authenticated
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE INSERT, UPDATE, DELETE ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
