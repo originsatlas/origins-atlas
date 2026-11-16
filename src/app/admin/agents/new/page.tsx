@@ -12,7 +12,7 @@ export default function NewAgentPage() {
 
   const [form, setForm] = useState({
     name: '',
-    source_platform: 'Hipflat',
+    source_platform: 'Direct Agency',
     contact_email: '',
     contact_phone: '',
     website_url: '',
@@ -81,7 +81,7 @@ export default function NewAgentPage() {
           <div className="form-group">
             <label className="form-label">Source Platform</label>
             <input type="text" name="source_platform" value={form.source_platform} onChange={handleChange}
-              className="form-input" placeholder="e.g., Hipflat, DDProperty" />
+              className="form-input" placeholder="e.g., Direct Agency, Broker Website" />
           </div>
           <div className="form-row">
             <div className="form-group">

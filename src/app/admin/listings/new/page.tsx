@@ -113,7 +113,7 @@ export default function NewListingPage() {
           <div className="form-group">
             <label className="form-label">Source URL</label>
             <input type="url" name="source_url" value={form.source_url} onChange={handleChange}
-              className="form-input" placeholder="https://www.hipflat.com/..." />
+              className="form-input" placeholder="https://broker-website.com/properties/..." />
           </div>
 
           <div className="form-row-3">

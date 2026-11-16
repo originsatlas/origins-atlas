@@ -478,7 +478,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                               rel="noopener noreferrer"
                               className="btn btn-outline btn-sm"
                             >
-                              Verify on {agent?.source_platform || 'Listing Source'} ↗
+                              View Original Listing ↗
                             </a>
                           ) : (
                             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>

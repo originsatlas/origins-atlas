@@ -49,7 +49,7 @@ DECLARE
   v_house_e UUID := gen_random_uuid(); -- Unit 88/28 (4 bed, 5 bath, 310 sqm)
   v_house_f UUID := gen_random_uuid(); -- Unit 88/35 (4 bed, 4 bath, 289 sqm - potential duplicate of 88/12)
 
-  -- 4. Source Listing IDs (from Hipflat platform)
+  -- 4. Source Listing IDs (from verified broker platforms)
   v_listing_1 UUID := gen_random_uuid();
   v_listing_2 UUID := gen_random_uuid();
   v_listing_3 UUID := gen_random_uuid();
@@ -103,7 +103,7 @@ BEGIN
     (
       v_agent_108siam,
       '108Siam Sales and Rentals',
-      'Hipflat',
+      'Direct Agency',
       'contact@108siam.com',
       '+66 2 712 8555',
       'https://www.108siam.com',
@@ -113,7 +113,7 @@ BEGIN
     (
       v_agent_propscout,
       'PropertyScout Great Deals',
-      'Hipflat',
+      'Direct Agency',
       'inquiries@propertyscout.co.th',
       '+66 2 026 8320',
       'https://propertyscout.co.th',
@@ -123,7 +123,7 @@ BEGIN
     (
       v_agent_connex,
       'Connex Property Bangkok',
-      'Hipflat',
+      'Direct Agency',
       'sales@connexproperty.co.th',
       '+66 62 879 9395',
       'https://connexproperty.co.th',
@@ -133,7 +133,7 @@ BEGIN
     (
       v_agent_agentplus,
       'Agentplus Real Estate',
-      'Hipflat',
+      'Direct Agency',
       'info@agentplus.co.th',
       '+66 89 445 6112',
       'https://agentplus.co.th',
@@ -259,7 +259,7 @@ BEGIN
     );
 
   -- ==========================================================================
-  -- 4. SOURCE LISTINGS (Connecting external Hipflat posts to canonical houses)
+  -- 4. SOURCE LISTINGS (Connecting verified broker posts to canonical houses)
   -- ==========================================================================
   INSERT INTO source_listings (
     id, house_id, agent_id, source_url, source_listing_id,
@@ -271,8 +271,8 @@ BEGIN
       v_listing_1,
       v_house_a,
       v_agent_108siam,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-1081',
-      'HF-BKK-1081',
+      'https://www.108siam.com/properties/nirvana-absolute-bangna-1081',
+      'OA-BKK-1081',
       636775.00, 23450000.00, 2203.00,
       '2024-09-01', '2024-09-25', true,
       'Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm luxury detached home. Fully fitted modern kitchen, maid quarters, 3 parking. Listed by 108Siam.'
@@ -283,8 +283,8 @@ BEGIN
       v_listing_2,
       v_house_b,
       v_agent_propscout,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-2094',
-      'HF-BKK-2094',
+      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-2094',
+      'OA-BKK-2094',
       858002.00, 31600000.00, 2396.00,
       '2024-09-01', '2024-09-25', true,
       'Nirvana Absolute Bangna - 5 bed, 4 bath, 358 sqm grand residence. Premium plot with pool provision and 4 covered parking.'
@@ -295,8 +295,8 @@ BEGIN
       v_listing_3,
       v_house_a,
       v_agent_propscout,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-3310',
-      'HF-BKK-3310',
+      'https://connexproperty.co.th/listings/bangkok-house-nirvana-absolute-bangna-3310',
+      'OA-BKK-3310',
       582963.00, 21450000.00, 2017.00,
       '2024-08-15', '2024-09-25', true,
       'Hot Deal! Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm. Significant price drop from original owner asking price. Listed by PropertyScout.'
@@ -307,8 +307,8 @@ BEGIN
       v_listing_4,
       v_house_c,
       v_agent_connex,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-4155',
-      'HF-BKK-4155',
+      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-4155',
+      'OA-BKK-4155',
       594922.00, 21900000.00, 2428.00,
       '2024-09-05', '2024-09-25', true,
       'Nirvana Absolute Bangna - 3 bed, 4 bath with 3 parking spaces. Well designed home close to clubhouse. Listed by Connex Property.'
@@ -319,8 +319,8 @@ BEGIN
       v_listing_5,
       v_house_d,
       v_agent_propscout,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-5821',
-      'HF-BKK-5821',
+      'https://www.108siam.com/properties/nirvana-absolute-bangna-5821',
+      'OA-BKK-5821',
       717493.00, 26400000.00, 2180.00,
       '2024-09-01', '2024-09-25', true,
       'Spacious 4 bedroom, 4 bathroom detached house in Nirvana Absolute Bangna. 329 sqm with imported finishes.'
@@ -331,8 +331,8 @@ BEGIN
       v_listing_6,
       v_house_e,
       v_agent_connex,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-6739',
-      'HF-BKK-6739',
+      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-6739',
+      'OA-BKK-6739',
       956658.00, 35200000.00, 3086.00,
       '2024-08-20', '2024-09-25', true,
       'Exclusive 4 bedroom, 5 bathroom villa. Highest specification in the community with en-suite bathrooms in all rooms.'
@@ -343,8 +343,8 @@ BEGIN
       v_listing_7,
       v_house_f,
       v_agent_agentplus,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-7402',
-      'HF-BKK-7402',
+      'https://connexproperty.co.th/listings/bangkok-house-nirvana-absolute-bangna-7402',
+      'OA-BKK-7402',
       878630.00, 32350000.00, 3040.00,
       '2024-09-10', '2024-09-25', true,
       'Nirvana Absolute Bangna 4 bed, 4 bath. Modern luxury house with high security and privacy.'
@@ -355,8 +355,8 @@ BEGIN
       v_listing_8,
       v_house_f,
       v_agent_agentplus,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-8910',
-      'HF-BKK-8910',
+      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-8910',
+      'OA-BKK-8910',
       636775.00, 23450000.00, 2203.00,
       '2024-08-01', '2024-09-25', false,
       'Special promotional price for 4 bedroom detached villa in Nirvana Absolute Bangna. Agentplus exclusive (superseded/delisted).'
@@ -406,7 +406,7 @@ BEGIN
       '2024-09-20 10:30:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-1081',
+      'https://www.108siam.com/properties/nirvana-absolute-bangna-1081',
       'Cross-referenced against 108Siam and PropertyScout listings. Cadastral parcel verified at Bangna Land Office.'
     ),
     (
@@ -415,7 +415,7 @@ BEGIN
       '2024-09-20 14:15:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-2094',
+      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-2094',
       'Unique 5-bedroom model verified against Nirvana Absolute developer master plan.'
     ),
     (
@@ -424,7 +424,7 @@ BEGIN
       NULL,
       NULL,
       'agent',
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-4155',
+      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-4155',
       'Single source listing from Connex Property. Awaiting title deed copy.'
     ),
     (
@@ -433,7 +433,7 @@ BEGIN
       '2024-09-21 09:00:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-5821',
+      'https://www.108siam.com/properties/nirvana-absolute-bangna-5821',
       '329 sqm floor plan verified on site at Bangna KM 12.'
     ),
     (
@@ -442,7 +442,7 @@ BEGIN
       NULL,
       NULL,
       NULL,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-6739',
+      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-6739',
       'Connex Property listing under preliminary review.'
     ),
     (
@@ -451,7 +451,7 @@ BEGIN
       NULL,
       NULL,
       NULL,
-      'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-8910',
+      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-8910',
       'Flagged by duplicate detection engine: potential duplicate of Unit 88/12.'
     );
 
@@ -466,7 +466,7 @@ BEGIN
     0.78,
     ARRAY['same_community', 'matching_price_point', 'identical_bedroom_count', 'identical_bathroom_count', 'matching_square_meters'],
     'pending',
-    'House Unit 88/12 ($636,775 by 108Siam) matches House Unit 88/35 ($636,775 by Agentplus). Both are 4 bed/4 bath, 289 sqm in Nirvana Absolute Bangna. High probability of agent double-listing on Hipflat. Manual physical unit inspection recommended before merging records.'
+    'House Unit 88/12 ($636,775 by 108Siam) matches House Unit 88/35 ($636,775 by Agentplus). Both are 4 bed/4 bath, 289 sqm in Nirvana Absolute Bangna. High probability of agent double-listing across broker channels. Manual physical unit inspection recommended before merging records.'
   );
 
 END $$;

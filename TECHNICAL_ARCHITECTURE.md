@@ -9,7 +9,7 @@
 
 Origins Atlas is a specialized luxury real estate intelligence platform designed to serve as the **authoritative single source of truth** for master-planned communities and high-end residential developments in Southeast Asia, beginning with Bangkok, Thailand.
 
-In emerging and high-growth property markets across Southeast Asia, property data is notoriously fragmented. Multiple independent agencies, aggregators, and freelance brokers re-list the identical physical property across portals (Hipflat, DDproperty, FazWaz, DotProperty) with disparate price points, inconsistent descriptions, inaccurate coordinates, and stale availability.
+In emerging and high-growth property markets across Southeast Asia, property data is notoriously fragmented. Multiple independent agencies, aggregators, and freelance brokers re-list the identical physical property across various external portals and brokerage channels with disparate price points, inconsistent descriptions, inaccurate coordinates, and stale availability.
 
 Origins Atlas solves this fundamental market failure through an architectural paradigm centered on **Canonical Physical Entities**:
 - **Communities** define the master-planned real estate development.
