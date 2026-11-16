@@ -110,7 +110,7 @@ export default function NewCommunityPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">URL Slug</label>
+            <label className="form-label">URL Slug *</label>
             <input
               type="text"
               name="slug"
@@ -118,6 +118,7 @@ export default function NewCommunityPage() {
               onChange={handleChange}
               className="form-input"
               placeholder="auto-generated-from-name"
+              required
             />
             <span className="form-hint">Auto-generated. URL: /communities/{form.slug || '...'}</span>
           </div>
@@ -214,10 +215,10 @@ export default function NewCommunityPage() {
                 className="form-select"
               >
                 <option value="gated_community">Gated Community</option>
-                <option value="condo">Condominium</option>
+                <option value="residential_estate">Residential Estate</option>
+                <option value="luxury_resort">Luxury Resort</option>
+                <option value="condominium">Condominium</option>
                 <option value="village">Village</option>
-                <option value="townhouse_project">Townhouse Project</option>
-                <option value="other">Other</option>
               </select>
             </div>
           </div>

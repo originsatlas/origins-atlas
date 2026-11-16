@@ -41,9 +41,10 @@ Fill in your Supabase project credentials and admin authentication keys:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 
 ADMIN_EMAIL=admin@originsatlas.com
-ADMIN_PASSWORD=<your-admin-password>
+ADMIN_PASSWORD=<your-secure-admin-password>
 ADMIN_SESSION_SECRET=<32-char-random-secret>
 ```
 
@@ -51,7 +52,7 @@ ADMIN_SESSION_SECRET=<32-char-random-secret>
 Apply migrations using either:
 ```bash
 supabase db push
-# or run supabase/schema.sql and supabase/seed.sql in the Supabase SQL Editor
+# or run the sequential migrations in supabase/migrations/ in the Supabase SQL Editor
 ```
 
 ### 4. Run Development Server
@@ -62,10 +63,9 @@ Open [http://localhost:3000](http://localhost:3000) for the public portal, or [h
 
 ---
 
-## Admin Portal & Test Access
+## Admin Portal Access
 
-The administrative CMS (`/admin`) is guarded by an Edge Proxy middleware using stateless Web Crypto HMAC-SHA256 session tokens.
+The administrative CMS (`/admin`) is guarded by Next.js Edge Proxy middleware using stateless Web Crypto HMAC-SHA256 session tokens.
 
 - **Login URL:** `/admin/login`
-- **Default Prototype Admin Email:** `admin@originsatlas.com`
-- **Default Prototype Admin Password:** `OriginsAtlas2026!`
+- **Access Credentials:** Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your private `.env.local` file (or host environment variables). Authentication validates strictly against these environment variables; default fallback credentials have been completely removed for security.

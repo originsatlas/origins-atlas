@@ -120,7 +120,7 @@ export default function NewListingPage() {
             <div className="form-group">
               <label className="form-label">Price in THB (Primary) *</label>
               <input type="number" name="asking_price_thb" value={form.asking_price_thb} onChange={handleChange}
-                className="form-input" step="0.01" placeholder="e.g. 21450000" />
+                className="form-input" step="0.01" placeholder="e.g. 21450000" required />
               <span className="form-hint">Thai Baht is the source price</span>
             </div>
             <div className="form-group">

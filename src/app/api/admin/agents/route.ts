@@ -3,16 +3,17 @@ import { requireAdminSession } from '@/lib/auth';
 import { getAdminSupabaseClient, logAuditEvent } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { name, source_platform, contact_email, contact_phone, website_url, logo_url, is_verified } = body;
 
-    if (!name) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    if (!trimmedName) {
       return NextResponse.json({ error: 'Agent name is required' }, { status: 400 });
     }
 
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from('agents')
       .insert({
-        name,
+        name: trimmedName,
         source_platform: source_platform || null,
         contact_email: contact_email || null,
         contact_phone: contact_phone || null,
@@ -53,16 +54,17 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { id, name, source_platform, contact_email, contact_phone, website_url, logo_url, is_verified } = body;
 
-    if (!id || !name) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    if (!id || !trimmedName) {
       return NextResponse.json({ error: 'Agent ID and name are required' }, { status: 400 });
     }
 
@@ -72,7 +74,7 @@ export async function PUT(request: Request) {
     const { data, error } = await supabase
       .from('agents')
       .update({
-        name,
+        name: trimmedName,
         source_platform: source_platform || null,
         contact_email: contact_email || null,
         contact_phone: contact_phone || null,
@@ -106,12 +108,12 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

@@ -286,6 +286,7 @@ BEGIN
       'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-2094',
       'HF-BKK-2094',
       858002.00, 31600000.00, 2396.00,
+      '2024-09-01', '2024-09-25', true,
       'Nirvana Absolute Bangna - 5 bed, 4 bath, 358 sqm grand residence. Premium plot with pool provision and 4 covered parking.'
     ),
 
@@ -349,7 +350,7 @@ BEGIN
       'Nirvana Absolute Bangna 4 bed, 4 bath. Modern luxury house with high security and privacy.'
     ),
 
-    -- Listing #8: House F (88/35) listed by Agentplus ($636,775 / 23.45M THB) -> matches House A price
+    -- Listing #8: House F (88/35) listed by Agentplus ($636,775 / 23.45M THB) -> superseded promotional listing
     (
       v_listing_8,
       v_house_f,
@@ -357,8 +358,8 @@ BEGIN
       'https://www.hipflat.com/listings/bangkok-house-nirvana-absolute-bangna-hf-bkk-8910',
       'HF-BKK-8910',
       636775.00, 23450000.00, 2203.00,
-      '2024-08-01', '2024-09-25', true,
-      'Special promotional price for 4 bedroom detached villa in Nirvana Absolute Bangna. Agentplus exclusive.'
+      '2024-08-01', '2024-09-25', false,
+      'Special promotional price for 4 bedroom detached villa in Nirvana Absolute Bangna. Agentplus exclusive (superseded/delisted).'
     );
 
   -- ==========================================================================

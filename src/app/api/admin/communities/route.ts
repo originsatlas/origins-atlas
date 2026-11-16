@@ -2,26 +2,35 @@ import { NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth';
 import { getAdminSupabaseClient, logAuditEvent } from '@/lib/supabase/admin';
 
-export async function POST(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
+const VALID_COMMUNITY_TYPES = ['gated_community', 'residential_estate', 'luxury_resort', 'condominium', 'village'];
 
+export async function POST(request: Request) {
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { name, slug, description, location, city, province, country, total_units, community_type, amenities } = body;
 
-    if (!name || !slug) {
-      return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedSlug = typeof slug === 'string' ? slug.trim().toLowerCase() : '';
+
+    if (!trimmedName || !trimmedSlug) {
+      return NextResponse.json({ error: 'Name and slug are required and cannot be empty' }, { status: 400 });
+    }
+
+    if (community_type && !VALID_COMMUNITY_TYPES.includes(community_type)) {
+      return NextResponse.json({ error: `Invalid community type. Must be one of: ${VALID_COMMUNITY_TYPES.join(', ')}` }, { status: 400 });
     }
 
     const supabase = getAdminSupabaseClient();
     const { data, error } = await supabase
       .from('communities')
       .insert({
-        name,
-        slug,
+        name: trimmedName,
+        slug: trimmedSlug,
         description: description || null,
         location: location || null,
         city: city || null,
@@ -56,17 +65,24 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { id, name, slug, description, location, city, province, country, total_units, community_type, amenities } = body;
 
-    if (!id || !name || !slug) {
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const trimmedSlug = typeof slug === 'string' ? slug.trim().toLowerCase() : '';
+
+    if (!id || !trimmedName || !trimmedSlug) {
       return NextResponse.json({ error: 'ID, name, and slug are required' }, { status: 400 });
+    }
+
+    if (community_type && !VALID_COMMUNITY_TYPES.includes(community_type)) {
+      return NextResponse.json({ error: `Invalid community type. Must be one of: ${VALID_COMMUNITY_TYPES.join(', ')}` }, { status: 400 });
     }
 
     const supabase = getAdminSupabaseClient();
@@ -77,8 +93,8 @@ export async function PUT(request: Request) {
     const { data, error } = await supabase
       .from('communities')
       .update({
-        name,
-        slug,
+        name: trimmedName,
+        slug: trimmedSlug,
         description: description || null,
         location: location || null,
         city: city || null,
@@ -114,12 +130,12 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

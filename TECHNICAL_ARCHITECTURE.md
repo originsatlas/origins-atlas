@@ -48,6 +48,11 @@ erDiagram
         TEXT image_url
         DECIMAL latitude
         DECIMAL longitude
+        BOOLEAN is_archived
+        TIMESTAMPTZ archived_at
+        TEXT archived_by
+        TEXT created_by
+        TEXT updated_by
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
     }
@@ -74,6 +79,11 @@ erDiagram
         BOOLEAN has_price_reduction
         DECIMAL latitude
         DECIMAL longitude
+        BOOLEAN is_archived
+        TIMESTAMPTZ archived_at
+        TEXT archived_by
+        TEXT created_by
+        TEXT updated_by
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
     }
@@ -87,6 +97,11 @@ erDiagram
         TEXT website_url
         TEXT logo_url
         BOOLEAN is_verified
+        BOOLEAN is_archived
+        TIMESTAMPTZ archived_at
+        TEXT archived_by
+        TEXT created_by
+        TEXT updated_by
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
     }
@@ -100,9 +115,15 @@ erDiagram
         DECIMAL asking_price_usd
         DECIMAL asking_price_thb
         DECIMAL price_per_sqm_usd
+        DECIMAL price_per_sqm_thb
         DATE listing_date
         DATE last_seen_date
         BOOLEAN is_active
+        BOOLEAN is_archived
+        TIMESTAMPTZ archived_at
+        TEXT archived_by
+        TEXT created_by
+        TEXT updated_by
         TEXT listing_description
         TEXT_ARRAY listing_images
         TIMESTAMPTZ created_at
@@ -148,6 +169,18 @@ erDiagram
         TEXT notes
         TIMESTAMPTZ created_at
     }
+
+    AUDIT_LOGS {
+        UUID id PK
+        TEXT table_name
+        UUID record_id
+        TEXT action
+        TEXT changed_by
+        JSONB old_values
+        JSONB new_values
+        TEXT notes
+        TIMESTAMPTZ created_at
+    }
 ```
 
 ---
@@ -160,13 +193,14 @@ The database is built on **PostgreSQL 15+** managed via **Supabase**. All primar
 
 | Table Name | Description | Key Constraints & Indexes |
 |---|---|---|
-| `communities` | Master residential developments / gated projects. | `PRIMARY KEY (id)`, `UNIQUE(slug)`. |
-| `houses` | The canonical physical real estate units. | `PRIMARY KEY (id)`, `FOREIGN KEY (community_id) ON DELETE CASCADE`, `UNIQUE(community_id, house_number)`, Indexes on `community_id`, `status`. |
-| `agents` | Brokers, real estate agencies, and scraping sources. | `PRIMARY KEY (id)`. |
-| `source_listings` | Broker-published listing instances across platforms. | `PRIMARY KEY (id)`, `FOREIGN KEY (house_id) ON DELETE CASCADE`, `FOREIGN KEY (agent_id) ON DELETE CASCADE`, Indexes on `house_id`, `agent_id`, `is_active`. |
-| `price_history` | Time-series log of price adjustments. | `PRIMARY KEY (id)`, `FOREIGN KEY (source_listing_id) ON DELETE CASCADE`, `FOREIGN KEY (house_id) ON DELETE CASCADE`, Indexes on `source_listing_id`, `house_id`, `recorded_date`. |
+| `communities` | Master residential developments / gated projects. | `PRIMARY KEY (id)`, `UNIQUE(slug)`, Soft-delete (`is_archived`). |
+| `houses` | The canonical physical real estate units. | `PRIMARY KEY (id)`, `FOREIGN KEY (community_id) ON DELETE CASCADE`, `UNIQUE(community_id, house_number)`, Indexes on `community_id`, `status`, Soft-delete (`is_archived`). |
+| `agents` | Brokers, real estate agencies, and scraping sources. | `PRIMARY KEY (id)`, Soft-delete (`is_archived`). |
+| `source_listings` | Broker-published listing instances across platforms. | `PRIMARY KEY (id)`, `FOREIGN KEY (house_id) ON DELETE CASCADE`, `FOREIGN KEY (agent_id) ON DELETE CASCADE`, Indexes on `house_id`, `agent_id`, `is_active`, Soft-delete (`is_archived`). |
+| `price_history` | Immutable time-series log of price adjustments. | `PRIMARY KEY (id)`, `FOREIGN KEY (source_listing_id) ON DELETE CASCADE`, `FOREIGN KEY (house_id) ON DELETE CASCADE`, Indexes on `source_listing_id`, `house_id`, `recorded_date`. Append-only immutability trigger blocks UPDATE/DELETE. |
 | `verifications` | Audit records verifying house details, titles, and site visits. | `PRIMARY KEY (id)`, `FOREIGN KEY (house_id) ON DELETE CASCADE`, Index on `house_id`. |
 | `duplicate_reviews` | Queue for suspected duplicate listings awaiting resolution. | `PRIMARY KEY (id)`, `FOREIGN KEY (house_id_a) ON DELETE CASCADE`, `FOREIGN KEY (house_id_b) ON DELETE CASCADE`, `UNIQUE(house_id_a, house_id_b)`, `CHECK (house_id_a != house_id_b)`. |
+| `audit_logs` | Security change-tracking log for all administrative mutations. | `PRIMARY KEY (id)`, Index on `(table_name, record_id)`. Records action, actor email, and full JSON state before/after. |
 
 ### 3.2. Automated Triggers & Maintenance
 To prevent manual drift in timestamps, an automated PostgreSQL trigger (`update_updated_at_column()`) is attached to all mutable tables (`communities`, `houses`, `agents`, `source_listings`):
@@ -182,9 +216,10 @@ $$ language 'plpgsql';
 ```
 
 ### 3.3. Security & Access Model (RLS)
-The database enforces **Row Level Security (RLS)**:
-- **Public (Anon/Authenticated):** Read access (`SELECT`) is granted across all public tables (`communities`, `houses`, `agents`, `source_listings`, `price_history`, `verifications`, `duplicate_reviews`).
-- **Prototype Admin Layer:** Prototype write operations (`INSERT`, `UPDATE`, `DELETE`) are accessible through the web administration interface, which is gated by a secure Edge Proxy authentication layer.
+The database enforces **strict Row Level Security (RLS)** and role isolation:
+- **Public & Authenticated (`anon`, `authenticated`):** Read-only access (`SELECT`) is granted across public tables (`communities`, `houses`, `agents`, `source_listings`, `price_history`, `verifications`, `duplicate_reviews`, `audit_logs`). Direct database writes (`INSERT`, `UPDATE`, `DELETE`) are **completely revoked** from both `anon` and `authenticated` roles at both table permission and RLS policy levels.
+- **Service Role (`service_role`):** All database mutations execute strictly server-side through Next.js API Route Handlers using the elevated `SUPABASE_SERVICE_ROLE_KEY`. RLS write policies target `service_role` exclusively.
+- **Admin Authentication:** The web administration interface (`/admin/*`) is gated by an Edge Proxy middleware using stateless Web Crypto HMAC-SHA256 session tokens. Operations validate strictly against server-configured `ADMIN_EMAIL` and `ADMIN_PASSWORD` credentials. Default fallbacks have been removed.
 
 ---
 

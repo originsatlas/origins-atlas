@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { formatUSD, formatTHB, formatPricePerSqm, formatDate, getVerificationDisplay } from '@/lib/utils';
+import { formatUSD, formatTHB, formatPricePerSqm, formatPricePerSqmTHB, formatDate, getVerificationDisplay } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -154,17 +154,21 @@ export default async function HouseDetailPage({ params }: PageProps) {
               {house.status === 'pending_review' && (
                 <span className="badge badge-pending">Under Verification</span>
               )}
-              {latestVerification && (
-                <span
-                  className={`badge badge-${
-                    latestVerification.verification_status === 'verified'
-                      ? 'verified'
-                      : 'unverified'
-                  }`}
-                >
-                  ✓ {latestVerification.verification_status}
-                </span>
-              )}
+              {latestVerification && (() => {
+                const vd = getVerificationDisplay(latestVerification.verification_status);
+                const badgeClass = latestVerification.verification_status === 'verified'
+                  ? 'verified'
+                  : latestVerification.verification_status === 'pending'
+                  ? 'pending'
+                  : latestVerification.verification_status === 'disputed'
+                  ? 'price-drop'
+                  : 'unverified';
+                return (
+                  <span className={`badge badge-${badgeClass}`}>
+                    {vd.icon} {vd.label}
+                  </span>
+                );
+              })()}
             </div>
 
             {/* Title & Location */}
@@ -178,7 +182,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                 wordBreak: 'break-word',
               }}
             >
-              Unit {house.house_number || 'House'} — {house.bedrooms} Bed Villa
+              Unit {house.house_number || 'House'} — {house.bedrooms ? `${house.bedrooms} Bed ` : ''}{house.property_type ? house.property_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Property'}
             </h1>
             <p
               style={{
@@ -287,7 +291,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                         maxWidth: 'calc(100% - 24px)',
                       }}
                     >
-                      📷 Nirvana Absolute Bangna • Plot {house.house_number}
+                      📷 {community.name} • Plot {house.house_number}
                     </div>
                   </div>
 
@@ -328,7 +332,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Attached Source Listings Section — Hidden for now
+              {/* Attached Source Listings Section */}
               <div className="section" id="source-listings-section">
                 <div
                   style={{
@@ -491,7 +495,6 @@ export default async function HouseDetailPage({ params }: PageProps) {
                   </div>
                 )}
               </div>
-              */}
 
               {/* Price History Timeline */}
               <div className="section" id="price-history-section">
@@ -526,11 +529,16 @@ export default async function HouseDetailPage({ params }: PageProps) {
                               ({formatUSD(entry.price_usd)})
                             </div>
                           )}
-                          {entry.price_per_sqm_usd && (
+                          {entry.price_per_sqm_thb ? (
+                            <div className="price-history-price-sqm">
+                              {formatPricePerSqmTHB(entry.price_per_sqm_thb)}
+                              {entry.price_per_sqm_usd && <span style={{ opacity: 0.8, marginLeft: '4px' }}>({formatPricePerSqm(entry.price_per_sqm_usd)})</span>}
+                            </div>
+                          ) : entry.price_per_sqm_usd ? (
                             <div className="price-history-price-sqm">
                               {formatPricePerSqm(entry.price_per_sqm_usd)}
                             </div>
-                          )}
+                          ) : null}
                         </div>
 
                         <div className="price-history-change-col">
@@ -562,7 +570,9 @@ export default async function HouseDetailPage({ params }: PageProps) {
               {/* Description & Features */}
               {house.description && (
                 <div className="section">
-                  <h2 className="section-title">About This Villa</h2>
+                  <h2 className="section-title">
+                    About This {house.property_type ? house.property_type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Property'}
+                  </h2>
                   <p style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
                     {house.description}
                   </p>

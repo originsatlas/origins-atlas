@@ -266,6 +266,7 @@ DECLARE
   v_change_type TEXT;
   v_exchange_rate DECIMAL(10, 4) := 0.0271;
   v_derived_usd DECIMAL(12, 2);
+  v_sqm_thb DECIMAL(12, 2);
 BEGIN
   IF NEW.asking_price_thb IS NOT NULL AND NEW.asking_price_usd IS NULL THEN
     NEW.asking_price_usd := ROUND(NEW.asking_price_thb * v_exchange_rate, 2);
@@ -273,15 +274,24 @@ BEGIN
 
   v_derived_usd := COALESCE(NEW.asking_price_usd, ROUND(COALESCE(NEW.asking_price_thb, 0) * v_exchange_rate, 2));
 
+  -- Derive price_per_sqm_thb if not explicitly set
+  v_sqm_thb := NEW.price_per_sqm_thb;
+  IF v_sqm_thb IS NULL AND NEW.asking_price_thb IS NOT NULL THEN
+    SELECT CASE WHEN house_size_sqm > 0 THEN ROUND(NEW.asking_price_thb / house_size_sqm, 2) ELSE NULL END
+    INTO v_sqm_thb
+    FROM houses WHERE id = NEW.house_id;
+  END IF;
+
   IF TG_OP = 'INSERT' THEN
     IF NEW.asking_price_thb IS NOT NULL OR NEW.asking_price_usd IS NOT NULL THEN
       INSERT INTO price_history (
-        source_listing_id, house_id, price_thb, price_usd, price_per_sqm_usd,
+        source_listing_id, house_id, price_thb, price_usd, price_per_sqm_thb, price_per_sqm_usd,
         recorded_date, change_type, change_amount_usd, change_amount_thb, change_percentage, notes
       ) VALUES (
         NEW.id, NEW.house_id,
         COALESCE(NEW.asking_price_thb, ROUND(NEW.asking_price_usd / v_exchange_rate, 2)),
         v_derived_usd,
+        v_sqm_thb,
         NEW.price_per_sqm_usd,
         CURRENT_DATE, 'initial', 0.00, 0.00, 0.00,
         'Initial recorded listing price'
@@ -315,12 +325,13 @@ BEGIN
     END IF;
 
     INSERT INTO price_history (
-      source_listing_id, house_id, price_thb, price_usd, price_per_sqm_usd,
+      source_listing_id, house_id, price_thb, price_usd, price_per_sqm_thb, price_per_sqm_usd,
       recorded_date, change_type, change_amount_usd, change_amount_thb, change_percentage, notes
     ) VALUES (
       NEW.id, NEW.house_id,
       COALESCE(NEW.asking_price_thb, ROUND(NEW.asking_price_usd / v_exchange_rate, 2)),
       v_derived_usd,
+      v_sqm_thb,
       NEW.price_per_sqm_usd,
       CURRENT_DATE, v_change_type,
       ROUND(v_diff_thb * v_exchange_rate, 2),

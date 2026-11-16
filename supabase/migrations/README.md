@@ -34,6 +34,6 @@ supabase migration up
 
 ### Option 2: Via Supabase Web Dashboard (SQL Editor)
 1. Navigate to the **SQL Editor** in your Supabase project dashboard.
-2. For fresh setup: Run `20260926000001_initial_schema.sql` followed by `20261109000001_security_and_foundation.sql`.
-3. To update an existing database: Run `20261109000001_security_and_foundation.sql`.
+2. For fresh setup: Run `20260926000001_initial_schema.sql` followed by `20261109000001_security_and_foundation.sql`, then `20261113000001_harden_stage1_closeout.sql`.
+3. To update an existing database: Run `20261109000001_security_and_foundation.sql` followed by `20261113000001_harden_stage1_closeout.sql`.
 4. (Optional development data): Run `20261002000001_seed_prototype_data.sql` in development or staging environments.

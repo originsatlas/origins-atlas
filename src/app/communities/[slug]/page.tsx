@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { formatUSD, formatTHB, formatPricePerSqm } from '@/lib/utils';
+import { formatUSD, formatTHB, formatPricePerSqm, formatPricePerSqmTHB } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -78,10 +78,17 @@ export default async function CommunityPage({ params }: PageProps) {
     .in('status', ['active', 'pending_review'])
     .order('created_at', { ascending: false });
 
-  // Filter out any archived records safely
-  const houses = (rawHouses || []).filter((h: any) => h.is_archived !== true);
+  // Filter out any archived houses and filter out archived/inactive nested listings
+  const houses = (rawHouses || [])
+    .filter((h: any) => h.is_archived !== true)
+    .map((h: any) => ({
+      ...h,
+      source_listings: (h.source_listings || []).filter(
+        (l: any) => l.is_archived !== true && l.is_active !== false
+      ),
+    }));
 
-  // Count active houses and total listings
+  // Count active houses and total active listings
   const activeHouses = houses?.filter((h) => h.status === 'active') || [];
   const totalListings = houses?.reduce((sum, h) => sum + (h.source_listings?.length || 0), 0) || 0;
 
@@ -154,7 +161,8 @@ export default async function CommunityPage({ params }: PageProps) {
                   const pricesUsd = listings.map((l: { asking_price_usd: number }) => l.asking_price_usd).filter(Boolean);
                   const lowestPriceThb = pricesThb.length > 0 ? Math.min(...pricesThb) : (pricesUsd.length > 0 ? Math.round(Math.min(...pricesUsd) / 0.0271) : null);
                   const lowestPriceUsd = pricesUsd.length > 0 ? Math.min(...pricesUsd) : (lowestPriceThb ? Math.round(lowestPriceThb * 0.0271) : null);
-                  const pricePerSqm = listings[0]?.price_per_sqm_usd;
+                  const pricePerSqmThb = house.house_size_sqm && lowestPriceThb ? Math.round(lowestPriceThb / house.house_size_sqm) : null;
+                  const pricePerSqmUsd = listings[0]?.price_per_sqm_usd || (house.house_size_sqm && lowestPriceUsd ? Math.round(lowestPriceUsd / house.house_size_sqm) : null);
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const latestVerification = (house.verifications as any[])?.[0];
                   const verificationStatus = latestVerification?.verification_status || 'unverified';
@@ -215,9 +223,10 @@ export default async function CommunityPage({ params }: PageProps) {
                                   ({formatUSD(lowestPriceUsd)})
                                 </div>
                               )}
-                              {pricePerSqm && (
+                              {pricePerSqmThb && (
                                 <div className="property-card-price-sqm">
-                                  {formatPricePerSqm(pricePerSqm)}
+                                  {formatPricePerSqmTHB(pricePerSqmThb)}
+                                  {pricePerSqmUsd && <span style={{ opacity: 0.8, marginLeft: '4px' }}>({formatPricePerSqm(pricePerSqmUsd)})</span>}
                                 </div>
                               )}
                             </div>

@@ -3,12 +3,12 @@ import { requireAdminSession } from '@/lib/auth';
 import { getAdminSupabaseClient, logAuditEvent } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       community_id,
@@ -83,12 +83,12 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -167,12 +167,12 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

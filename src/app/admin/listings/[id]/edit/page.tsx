@@ -199,6 +199,7 @@ export default function EditListingPage() {
                 onChange={handleChange}
                 className="form-input"
                 step="0.01"
+                required
               />
               <span className="form-hint">Thai Baht is the source price</span>
             </div>

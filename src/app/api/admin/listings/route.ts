@@ -3,12 +3,12 @@ import { requireAdminSession } from '@/lib/auth';
 import { getAdminSupabaseClient, logAuditEvent, deriveUsdFromThb, deriveThbFromUsd } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       house_id,
@@ -28,6 +28,10 @@ export async function POST(request: Request) {
 
     if (!house_id || !agent_id) {
       return NextResponse.json({ error: 'House and Agent selections are required' }, { status: 400 });
+    }
+
+    if (!asking_price_thb && !asking_price_usd) {
+      return NextResponse.json({ error: 'Asking price is required' }, { status: 400 });
     }
 
     // Determine THB as primary, derive USD
@@ -86,12 +90,12 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -172,12 +176,12 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await requireAdminSession();
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
-  }
-
   try {
+    const session = await requireAdminSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized: Admin session required' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

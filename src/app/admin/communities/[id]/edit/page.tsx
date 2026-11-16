@@ -138,8 +138,8 @@ export default function EditCommunityPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">URL Slug</label>
-            <input type="text" name="slug" value={form.slug} onChange={handleChange} className="form-input" />
+            <label className="form-label">URL Slug *</label>
+            <input type="text" name="slug" value={form.slug} onChange={handleChange} className="form-input" required />
           </div>
 
           <div className="form-group">
@@ -195,10 +195,10 @@ export default function EditCommunityPage() {
               <label className="form-label">Community Type</label>
               <select name="community_type" value={form.community_type} onChange={handleChange} className="form-select">
                 <option value="gated_community">Gated Community</option>
-                <option value="condo">Condominium</option>
+                <option value="residential_estate">Residential Estate</option>
+                <option value="luxury_resort">Luxury Resort</option>
+                <option value="condominium">Condominium</option>
                 <option value="village">Village</option>
-                <option value="townhouse_project">Townhouse Project</option>
-                <option value="other">Other</option>
               </select>
             </div>
           </div>

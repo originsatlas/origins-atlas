@@ -67,7 +67,7 @@ export default async function AdminDuplicatesPage() {
                 </div>
 
                 {/* Comparison */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '24px', alignItems: 'center' }}>
+                <div className="duplicate-comparison-grid">
                   {/* House A */}
                   <div style={{
                     padding: '16px',

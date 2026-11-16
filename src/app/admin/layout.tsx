@@ -22,6 +22,7 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // If on login page, render clean login view without admin sidebar
   if (pathname === '/admin/login') {
@@ -42,10 +43,40 @@ export default function AdminLayout({
 
   return (
     <div className="admin-layout">
+      {/* Mobile Top Header (Visible on mobile/tablet <= 768px) */}
+      <header className="admin-mobile-header">
+        <Link href="/" className="admin-mobile-header-brand" onClick={() => setSidebarOpen(false)}>
+          <Image
+            src="/brand/app-icon-dark.png"
+            alt="Origins Atlas"
+            width={28}
+            height={28}
+            style={{ borderRadius: '6px' }}
+          />
+          <span>Origins<span style={{ color: 'var(--gold-400)' }}>Atlas</span></span>
+        </Link>
+        <button
+          type="button"
+          className="admin-mobile-toggle"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle admin navigation menu"
+          aria-expanded={sidebarOpen}
+        >
+          {sidebarOpen ? '✕' : '☰'}
+        </button>
+      </header>
+
+      {/* Backdrop overlay for mobile sidebar */}
+      <div
+        className={`admin-sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+
       {/* Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
-          <Link href="/" className="admin-sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Link href="/" className="admin-sidebar-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => setSidebarOpen(false)}>
             <Image
               src="/brand/app-icon-dark.png"
               alt="Origins Atlas"
@@ -66,6 +97,7 @@ export default function AdminLayout({
               <Link
                 href={item.href}
                 className={pathname === item.href ? 'active' : ''}
+                onClick={() => setSidebarOpen(false)}
               >
                 <span className="nav-icon">{item.icon}</span>
                 {item.label}
@@ -77,19 +109,19 @@ export default function AdminLayout({
         <div className="admin-sidebar-label" style={{ marginTop: '24px' }}>Public Views</div>
         <ul className="admin-sidebar-nav">
           <li>
-            <Link href="/">
+            <Link href="/" onClick={() => setSidebarOpen(false)}>
               <span className="nav-icon">🌐</span>
               Home Page
             </Link>
           </li>
           <li>
-            <Link href="/communities">
+            <Link href="/communities" onClick={() => setSidebarOpen(false)}>
               <span className="nav-icon">🏘️</span>
               All Communities
             </Link>
           </li>
           <li>
-            <Link href="/communities/nirvana-absolute-bangna">
+            <Link href="/communities/nirvana-absolute-bangna" onClick={() => setSidebarOpen(false)}>
               <span className="nav-icon">🏡</span>
               Nirvana Absolute
             </Link>

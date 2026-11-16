@@ -95,8 +95,8 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Houses */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      {/* Recent Houses & Listings */}
+      <div className="admin-dashboard-grid">
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Recent Houses</h2>

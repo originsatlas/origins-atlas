@@ -27,11 +27,22 @@ export function formatTHB(amount: number | null | undefined): string {
 }
 
 /**
- * Format price per square meter
+ * Format price per square meter in USD
  */
 export function formatPricePerSqm(amount: number | null | undefined): string {
   if (amount == null) return '';
   return `$${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)}/m²`;
+}
+
+/**
+ * Format price per square meter in THB (Primary currency)
+ */
+export function formatPricePerSqmTHB(amount: number | null | undefined): string {
+  if (amount == null) return '';
+  return `฿${new Intl.NumberFormat('th-TH', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount)}/m²`;
@@ -50,7 +61,46 @@ export function formatDate(dateString: string | null | undefined): string {
 }
 
 /**
- * Get the lowest asking price from source listings
+ * Get the lowest asking price from source listings (THB primary)
+ */
+export function getLowestPriceTHB(
+  listings: { asking_price_thb?: number | null }[]
+): number | null {
+  const prices = listings
+    .map((l) => l.asking_price_thb)
+    .filter((p): p is number => p != null);
+  if (prices.length === 0) return null;
+  return Math.min(...prices);
+}
+
+/**
+ * Get the highest asking price from source listings (THB primary)
+ */
+export function getHighestPriceTHB(
+  listings: { asking_price_thb?: number | null }[]
+): number | null {
+  const prices = listings
+    .map((l) => l.asking_price_thb)
+    .filter((p): p is number => p != null);
+  if (prices.length === 0) return null;
+  return Math.max(...prices);
+}
+
+/**
+ * Format a price range from source listings in THB (Primary)
+ */
+export function formatPriceRangeTHB(
+  listings: { asking_price_thb?: number | null }[]
+): string {
+  const low = getLowestPriceTHB(listings);
+  const high = getHighestPriceTHB(listings);
+  if (low == null) return 'Price TBD';
+  if (low === high) return formatTHB(low);
+  return `${formatTHB(low)} – ${formatTHB(high)}`;
+}
+
+/**
+ * Get the lowest asking price from source listings (USD)
  */
 export function getLowestPrice(
   listings: { asking_price_usd: number | null }[]
