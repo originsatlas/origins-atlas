@@ -349,7 +349,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                       Attached Source Listings ({listings?.length || 0})
                     </h2>
                     <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', margin: 0 }}>
-                      Multiple agents advertise this same house. Compare pricing and listing sources below.
+                      External agent listings attached to this canonical house record. Compare pricing across broker sources.
                     </p>
                   </div>
                   {listings && listings.length > 1 && (
@@ -422,9 +422,6 @@ export default async function HouseDetailPage({ params }: PageProps) {
                         </div>
 
                         <div className="listing-card-meta" style={{ flexWrap: 'wrap', gap: '14px' }}>
-                          {agent?.source_platform && (
-                            <span>🌐 Platform: <strong>{agent.source_platform}</strong></span>
-                          )}
                           {listing.listing_date && (
                             <span>📅 First Listed: {formatDate(listing.listing_date)}</span>
                           )}
@@ -478,7 +475,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                               rel="noopener noreferrer"
                               className="btn btn-outline btn-sm"
                             >
-                              View Original Listing ↗
+                              View Source ↗
                             </a>
                           ) : (
                             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
