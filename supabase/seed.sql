@@ -107,41 +107,41 @@ BEGIN
   ) VALUES
     (
       v_agent_108siam,
-      '108Siam Sales and Rentals',
+      'Origins Atlas Demo Source A',
       'Direct Agency',
-      'contact@108siam.com',
+      'demo-a@originsatlas.com',
       '+66 2 712 8555',
-      'https://www.108siam.com',
+      'https://demo-source-a.originsatlas.test',
       'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80',
       true
     ),
     (
       v_agent_propscout,
-      'PropertyScout Great Deals',
+      'Origins Atlas Demo Source B',
       'Direct Agency',
-      'inquiries@propertyscout.co.th',
+      'demo-b@originsatlas.com',
       '+66 2 026 8320',
-      'https://propertyscout.co.th',
+      'https://demo-source-b.originsatlas.test',
       'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
       true
     ),
     (
       v_agent_connex,
-      'Connex Property Bangkok',
+      'Demo Agency A',
       'Direct Agency',
-      'sales@connexproperty.co.th',
+      'agency-a@originsatlas.com',
       '+66 62 879 9395',
-      'https://connexproperty.co.th',
+      'https://demo-agency-a.originsatlas.test',
       'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80',
       true
     ),
     (
       v_agent_agentplus,
-      'Agentplus Real Estate',
+      'Demo Agency B',
       'Direct Agency',
-      'info@agentplus.co.th',
+      'agency-b@originsatlas.com',
       '+66 89 445 6112',
-      'https://agentplus.co.th',
+      'https://demo-agency-b.originsatlas.test',
       'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=200&q=80',
       true
     );
@@ -271,100 +271,100 @@ BEGIN
     asking_price_usd, asking_price_thb, price_per_sqm_usd,
     listing_date, last_seen_date, is_active, listing_description
   ) VALUES
-    -- Listing #1: House A (88/12) listed by 108Siam ($636,775 / 23.45M THB)
+    -- Listing #1: House A (88/12) listed by Demo Source A ($636,775 / 23.45M THB)
     (
       v_listing_1,
       v_house_a,
       v_agent_108siam,
-      'https://www.108siam.com/properties/nirvana-absolute-bangna-1081',
+      'https://demo-source-a.originsatlas.test/listings/oa-bkk-1081',
       'OA-BKK-1081',
       636775.00, 23450000.00, 2203.00,
       '2024-09-01', '2024-09-25', true,
-      'Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm luxury detached home. Fully fitted modern kitchen, maid quarters, 3 parking. Listed by 108Siam.'
+      'Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm luxury detached home. Fully fitted modern kitchen, maid quarters, 3 parking. Listed by Origins Atlas Demo Source A.'
     ),
 
-    -- Listing #2: House B (88/14) listed by PropertyScout ($858,002 / 31.60M THB)
+    -- Listing #2: House B (88/14) listed by Demo Source B ($858,002 / 31.60M THB)
     (
       v_listing_2,
       v_house_b,
       v_agent_propscout,
-      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-2094',
+      'https://demo-source-b.originsatlas.test/listings/oa-bkk-2094',
       'OA-BKK-2094',
       858002.00, 31600000.00, 2396.00,
       '2024-09-01', '2024-09-25', true,
       'Nirvana Absolute Bangna - 5 bed, 4 bath, 358 sqm grand residence. Premium plot with pool provision and 4 covered parking.'
     ),
 
-    -- Listing #3: House A (88/12) listed by PropertyScout ($582,963 / 21.45M THB) -> PRICE DROP!
+    -- Listing #3: House A (88/12) listed by Demo Source B ($582,963 / 21.45M THB)
     (
       v_listing_3,
       v_house_a,
       v_agent_propscout,
-      'https://connexproperty.co.th/listings/bangkok-house-nirvana-absolute-bangna-3310',
+      'https://demo-source-b.originsatlas.test/listings/oa-bkk-3310',
       'OA-BKK-3310',
       582963.00, 21450000.00, 2017.00,
       '2024-08-15', '2024-09-25', true,
-      'Hot Deal! Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm. Significant price drop from original owner asking price. Listed by PropertyScout.'
+      'Nirvana Absolute Bangna - 4 bed, 4 bath, 289 sqm luxury detached home. Fully fitted modern kitchen, maid quarters, 3 parking. Listed by Origins Atlas Demo Source B.'
     ),
 
-    -- Listing #4: House C (88/19) listed by Connex Property ($594,922 / 21.90M THB)
+    -- Listing #4: House C (88/19) listed by Demo Agency A ($594,922 / 21.90M THB)
     (
       v_listing_4,
       v_house_c,
       v_agent_connex,
-      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-4155',
+      'https://demo-agency-a.originsatlas.test/listings/oa-bkk-4155',
       'OA-BKK-4155',
       594922.00, 21900000.00, 2428.00,
       '2024-09-05', '2024-09-25', true,
-      'Nirvana Absolute Bangna - 3 bed, 4 bath with 3 parking spaces. Well designed home close to clubhouse. Listed by Connex Property.'
+      'Nirvana Absolute Bangna - 3 bed, 4 bath with 3 parking spaces. Well designed home close to clubhouse. Listed by Demo Agency A.'
     ),
 
-    -- Listing #5: House D (88/21) listed by PropertyScout ($717,493 / 26.40M THB)
+    -- Listing #5: House D (88/21) listed by Demo Source B ($717,493 / 26.40M THB)
     (
       v_listing_5,
       v_house_d,
       v_agent_propscout,
-      'https://www.108siam.com/properties/nirvana-absolute-bangna-5821',
+      'https://demo-source-b.originsatlas.test/listings/oa-bkk-5821',
       'OA-BKK-5821',
       717493.00, 26400000.00, 2180.00,
       '2024-09-01', '2024-09-25', true,
       'Spacious 4 bedroom, 4 bathroom detached house in Nirvana Absolute Bangna. 329 sqm with imported finishes.'
     ),
 
-    -- Listing #6: House E (88/28) listed by Connex Property ($956,658 / 35.20M THB)
+    -- Listing #6: House E (88/28) listed by Demo Agency A ($956,658 / 35.20M THB)
     (
       v_listing_6,
       v_house_e,
       v_agent_connex,
-      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-6739',
+      'https://demo-agency-a.originsatlas.test/listings/oa-bkk-6739',
       'OA-BKK-6739',
       956658.00, 35200000.00, 3086.00,
       '2024-08-20', '2024-09-25', true,
       'Exclusive 4 bedroom, 5 bathroom villa. Highest specification in the community with en-suite bathrooms in all rooms.'
     ),
 
-    -- Listing #7: House F (88/35) listed by Agentplus ($878,630 / 32.35M THB)
+    -- Listing #7: House F (88/35) listed by Demo Agency B ($878,630 / 32.35M THB)
     (
       v_listing_7,
       v_house_f,
       v_agent_agentplus,
-      'https://connexproperty.co.th/listings/bangkok-house-nirvana-absolute-bangna-7402',
+      'https://demo-agency-b.originsatlas.test/listings/oa-bkk-7402',
       'OA-BKK-7402',
       878630.00, 32350000.00, 3040.00,
       '2024-09-10', '2024-09-25', true,
       'Nirvana Absolute Bangna 4 bed, 4 bath. Modern luxury house with high security and privacy.'
     ),
 
-    -- Listing #8: House F (88/35) listed by Agentplus ($636,775 / 23.45M THB) -> superseded promotional listing
+    -- Listing #8: House F (88/35) listed by Demo Agency B ($636,775 / 23.45M THB) -> superseded promotional listing
     (
       v_listing_8,
       v_house_f,
       v_agent_agentplus,
-      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-8910',
+      'https://demo-agency-b.originsatlas.test/listings/oa-bkk-8910',
       'OA-BKK-8910',
       636775.00, 23450000.00, 2203.00,
       '2024-08-01', '2024-09-25', false,
-      'Special promotional price for 4 bedroom detached villa in Nirvana Absolute Bangna. Agentplus exclusive (superseded/delisted).'
+      'Special promotional price for 4 bedroom detached villa in Nirvana Absolute Bangna. Demo Agency B (superseded/delisted).'
     );
 
   -- ==========================================================================
@@ -375,29 +375,29 @@ BEGIN
     recorded_date, change_type, change_amount_usd, change_percentage, notes
   ) VALUES
     -- Listing 1 initial price
-    (v_listing_1, v_house_a, 636775.00, 23450000.00, 2203.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from 108Siam'),
+    (v_listing_1, v_house_a, 636775.00, 23450000.00, 2203.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from Origins Atlas Demo Source A'),
 
     -- Listing 2 initial price
-    (v_listing_2, v_house_b, 858002.00, 31600000.00, 2396.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from PropertyScout'),
+    (v_listing_2, v_house_b, 858002.00, 31600000.00, 2396.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from Origins Atlas Demo Source B'),
 
-    -- Listing 3: Initial price then price drop of $53,812 (-8.45%)
+    -- Listing 3: Initial price then price revision
     (v_listing_3, v_house_a, 636775.00, 23450000.00, 2203.00, '2024-08-15', 'initial', 0.00, 0.00, 'Initial price recorded at launch'),
-    (v_listing_3, v_house_a, 582963.00, 21450000.00, 2017.00, '2024-09-10', 'decrease', -53812.00, -8.45, 'Agent reduced asking price by 2,000,000 THB to stimulate interest'),
+    (v_listing_3, v_house_a, 582963.00, 21450000.00, 2017.00, '2024-09-10', 'decrease', -53812.00, -8.45, 'Recorded asking price updated to 21,450,000 THB'),
 
     -- Listing 4 initial price
-    (v_listing_4, v_house_c, 594922.00, 21900000.00, 2428.00, '2024-09-05', 'initial', 0.00, 0.00, 'Initial recorded listing price from Connex Property'),
+    (v_listing_4, v_house_c, 594922.00, 21900000.00, 2428.00, '2024-09-05', 'initial', 0.00, 0.00, 'Initial recorded listing price from Demo Agency A'),
 
     -- Listing 5 initial price
-    (v_listing_5, v_house_d, 717493.00, 26400000.00, 2180.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from PropertyScout'),
+    (v_listing_5, v_house_d, 717493.00, 26400000.00, 2180.00, '2024-09-01', 'initial', 0.00, 0.00, 'Initial recorded listing price from Origins Atlas Demo Source B'),
 
     -- Listing 6 initial price
-    (v_listing_6, v_house_e, 956658.00, 35200000.00, 3086.00, '2024-08-20', 'initial', 0.00, 0.00, 'Initial recorded listing price from Connex Property'),
+    (v_listing_6, v_house_e, 956658.00, 35200000.00, 3086.00, '2024-08-20', 'initial', 0.00, 0.00, 'Initial recorded listing price from Demo Agency A'),
 
     -- Listing 7 initial price
-    (v_listing_7, v_house_f, 878630.00, 32350000.00, 3040.00, '2024-09-10', 'initial', 0.00, 0.00, 'Initial recorded listing price from Agentplus'),
+    (v_listing_7, v_house_f, 878630.00, 32350000.00, 3040.00, '2024-09-10', 'initial', 0.00, 0.00, 'Initial recorded listing price from Demo Agency B'),
 
     -- Listing 8 initial price
-    (v_listing_8, v_house_f, 636775.00, 23450000.00, 2203.00, '2024-08-01', 'initial', 0.00, 0.00, 'Promotional summer price from Agentplus');
+    (v_listing_8, v_house_f, 636775.00, 23450000.00, 2203.00, '2024-08-01', 'initial', 0.00, 0.00, 'Recorded promotional price from Demo Agency B');
 
   -- ==========================================================================
   -- 6. VERIFICATIONS
@@ -411,8 +411,8 @@ BEGIN
       '2024-09-20 10:30:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://www.108siam.com/properties/nirvana-absolute-bangna-1081',
-      'Cross-referenced against 108Siam and PropertyScout listings. Cadastral parcel verified at Bangna Land Office.'
+      'https://demo-source-a.originsatlas.test/listings/oa-bkk-1081',
+      'Property identity matched from available listing evidence.'
     ),
     (
       v_house_b,
@@ -420,8 +420,8 @@ BEGIN
       '2024-09-20 14:15:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-2094',
-      'Unique 5-bedroom model verified against Nirvana Absolute developer master plan.'
+      'https://demo-source-b.originsatlas.test/listings/oa-bkk-2094',
+      'Property specifications matched from available listing evidence.'
     ),
     (
       v_house_c,
@@ -429,8 +429,8 @@ BEGIN
       NULL,
       NULL,
       'agent',
-      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-4155',
-      'Single source listing from Connex Property. Awaiting title deed copy.'
+      'https://demo-agency-a.originsatlas.test/listings/oa-bkk-4155',
+      'Single source listing from Demo Agency A. Under preliminary review.'
     ),
     (
       v_house_d,
@@ -438,8 +438,8 @@ BEGIN
       '2024-09-21 09:00:00+00',
       'Joseph Semling (Origins Atlas)',
       'manual',
-      'https://www.108siam.com/properties/nirvana-absolute-bangna-5821',
-      '329 sqm floor plan verified on site at Bangna KM 12.'
+      'https://demo-source-b.originsatlas.test/listings/oa-bkk-5821',
+      '329 sqm floor plan matched with available listing evidence.'
     ),
     (
       v_house_e,
@@ -447,8 +447,8 @@ BEGIN
       NULL,
       NULL,
       NULL,
-      'https://propertyscout.co.th/listings/bangkok-house-nirvana-absolute-bangna-6739',
-      'Connex Property listing under preliminary review.'
+      'https://demo-agency-a.originsatlas.test/listings/oa-bkk-6739',
+      'Listing evidence under preliminary review.'
     ),
     (
       v_house_f,
@@ -456,8 +456,8 @@ BEGIN
       NULL,
       NULL,
       NULL,
-      'https://agentplus.co.th/listings/bangkok-house-nirvana-absolute-bangna-8910',
-      'Flagged by duplicate detection engine: potential duplicate of Unit 88/12.'
+      'https://demo-agency-b.originsatlas.test/listings/oa-bkk-8910',
+      'Flagged for review: potential duplicate listing across external sources.'
     );
 
   -- ==========================================================================
@@ -471,7 +471,7 @@ BEGIN
     0.78,
     ARRAY['same_community', 'matching_price_point', 'identical_bedroom_count', 'identical_bathroom_count', 'matching_square_meters'],
     'pending',
-    'House Unit 88/12 ($636,775 by 108Siam) matches House Unit 88/35 ($636,775 by Agentplus). Both are 4 bed/4 bath, 289 sqm in Nirvana Absolute Bangna. High probability of agent double-listing across broker channels. Manual physical unit inspection recommended before merging records.'
+    'House Unit 88/12 ($636,775 by Origins Atlas Demo Source A) matches House Unit 88/35 ($636,775 by Demo Agency B). Both are 4 bed/4 bath, 289 sqm in Nirvana Absolute Bangna. High probability of agent double-listing across broker channels. Physical unit inspection recommended before merging records.'
   );
 
 END $$;

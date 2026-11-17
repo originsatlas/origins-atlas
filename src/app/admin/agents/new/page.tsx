@@ -76,7 +76,7 @@ export default function NewAgentPage() {
           <div className="form-group">
             <label className="form-label">Agent / Company Name *</label>
             <input type="text" name="name" value={form.name} onChange={handleChange}
-              className="form-input" placeholder="e.g., PropertyScout" required />
+              className="form-input" placeholder="e.g., Origins Atlas Demo Source A" required />
           </div>
           <div className="form-group">
             <label className="form-label">Source Platform</label>

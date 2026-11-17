@@ -178,3 +178,30 @@ export function truncateText(text: string | null | undefined, maxLength: number)
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength).trim() + '…';
 }
+
+/**
+ * Sanitizes evidence and audit notes to ensure only factual, evidence-backed claims are displayed.
+ * Removes subjective assumptions (e.g. "to stimulate interest") and unsupported external authority claims.
+ */
+export function sanitizeEvidenceNote(note: string | null | undefined): string | null {
+  if (!note) return null;
+
+  let cleaned = note;
+
+  // Remove subjective assumptions
+  cleaned = cleaned.replace(/to stimulate interest/gi, '').trim();
+  cleaned = cleaned.replace(/Agent reduced asking price by 2,000,000 THB to stimulate interest/gi, 'Recorded asking price updated to 21,450,000 THB');
+
+  // Replace legacy real-world broker names with obvious demo sources
+  cleaned = cleaned.replace(/108Siam(\s+Sales and Rentals)?/gi, 'Origins Atlas Demo Source A');
+  cleaned = cleaned.replace(/PropertyScout(\s+Great Deals)?/gi, 'Origins Atlas Demo Source B');
+  cleaned = cleaned.replace(/Connex Property(\s+Bangkok)?/gi, 'Demo Agency A');
+  cleaned = cleaned.replace(/Agentplus(\s+Real Estate)?/gi, 'Demo Agency B');
+
+  // Replace unsupported verification claims (e.g. Land Office, Cadastral parcel)
+  cleaned = cleaned.replace(/Cadastral parcel verified at Bangna Land Office\.?/gi, 'Property identity matched from available listing evidence.');
+  cleaned = cleaned.replace(/Cadastral parcel verified at.*?Land Office\.?/gi, 'Property identity matched from available listing evidence.');
+  cleaned = cleaned.replace(/Cross-referenced against.*?Cadastral parcel verified at.*?Land Office\.?/gi, 'Property identity matched from available listing evidence.');
+
+  return cleaned.trim();
+}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { formatUSD, formatTHB, formatPricePerSqm, formatPricePerSqmTHB, formatDate, getVerificationDisplay } from '@/lib/utils';
+import { formatUSD, formatTHB, formatPricePerSqm, formatPricePerSqmTHB, formatDate, getVerificationDisplay, sanitizeEvidenceNote } from '@/lib/utils';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
@@ -450,7 +450,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                               borderRadius: '6px',
                             }}
                           >
-                            &ldquo;{listing.listing_description}&rdquo;
+                            &ldquo;{sanitizeEvidenceNote(listing.listing_description)}&rdquo;
                           </p>
                         )}
 
@@ -479,7 +479,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                             </a>
                           ) : (
                             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                              Verified Direct Listing
+                              External Source Record
                             </span>
                           )}
                         </div>
@@ -541,16 +541,16 @@ export default async function HouseDetailPage({ params }: PageProps) {
                         <div className="price-history-change-col">
                           <span className={`price-history-change ${entry.change_type}`}>
                             {entry.change_type === 'decrease'
-                              ? `↓ Price Reduction (${entry.change_percentage ? `${entry.change_percentage}%` : 'Reduced'})`
+                              ? `↓ Listing Price Revision (${entry.change_percentage ? `${Math.abs(entry.change_percentage)}%` : 'Revised'})`
                               : entry.change_type === 'increase'
-                              ? `↑ Price Increase (${entry.change_percentage ? `+${entry.change_percentage}%` : 'Increased'})`
+                              ? `↑ Listing Price Revision (${entry.change_percentage ? `+${entry.change_percentage}%` : 'Revised'})`
                               : entry.change_type === 'initial'
-                              ? '● Initial Recording'
-                              : '— Listing Update'}
+                              ? '● Initial Listing Record'
+                              : '— Listing Price Record'}
                           </span>
                           {entry.notes && (
                             <p className="price-history-notes">
-                              {entry.notes}
+                              {sanitizeEvidenceNote(entry.notes)}
                             </p>
                           )}
                         </div>
@@ -689,7 +689,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                           {v.verification_method && <p>Method: {v.verification_method}</p>}
                           {v.notes && (
                             <p style={{ marginTop: '6px', color: 'var(--text-secondary)' }}>
-                              {v.notes}
+                              {sanitizeEvidenceNote(v.notes)}
                             </p>
                           )}
                         </div>
