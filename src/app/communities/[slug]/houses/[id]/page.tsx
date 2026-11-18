@@ -147,7 +147,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
               <span className="badge badge-gold">
                 Canonical Property
               </span>
-              {house.is_new_listing && <span className="badge badge-new">New Listing</span>}
+              {house.is_new_listing && <span className="badge badge-new" title="Newly tracked on Origins Atlas">Newly Added Record</span>}
               {house.has_price_reduction && (
                 <span className="badge badge-price-drop">Price Reduced</span>
               )}
@@ -291,7 +291,7 @@ export default async function HouseDetailPage({ params }: PageProps) {
                         maxWidth: 'calc(100% - 24px)',
                       }}
                     >
-                      📷 {community.name} • Plot {house.house_number}
+                      🖼️ Listing & Marketing Imagery • Plot {house.house_number}
                     </div>
                   </div>
 
@@ -322,13 +322,17 @@ export default async function HouseDetailPage({ params }: PageProps) {
                         >
                           <img
                             src={img}
-                            alt={`Photo ${idx + 1}`}
+                            alt={`Visual ${idx + 1}`}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
                         </div>
                       ))}
                     </div>
                   )}
+
+                  <p style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '8px', marginBottom: 0 }}>
+                    * Imagery sourced from external agent listings and developer marketing materials; not verified on-site inspection photography.
+                  </p>
                 </div>
               )}
 

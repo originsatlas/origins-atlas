@@ -207,7 +207,7 @@ export default async function CommunityPage({ params }: PageProps) {
 
                           {/* Badges */}
                           <div className="property-card-badges">
-                            {house.is_new_listing && <span className="badge badge-new">New</span>}
+                            {house.is_new_listing && <span className="badge badge-new" title="Newly tracked on Origins Atlas">Newly Added</span>}
                             {house.has_price_reduction && <span className="badge badge-price-drop">Price Drop</span>}
                             {house.status === 'pending_review' && <span className="badge badge-pending">Review</span>}
                           </div>
